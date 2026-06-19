@@ -31,6 +31,29 @@ export function FieldGrid({ fields }: { fields: [string, string | React.ReactNod
   );
 }
 
+function CollapsibleSection({ icon, title, defaultOpen = false, children }: { icon: string; title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div style={{ marginBottom: 8, border: '1px solid #f0f4fb', borderRadius: 10, overflow: 'hidden' }}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 16px', background: open ? '#f8fafc' : '#fff', border: 'none', cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', borderBottom: open ? '1px solid #f0f4fb' : 'none' }}
+      >
+        <div style={{ width: 28, height: 28, background: '#E8F5E9', borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <i className={`bi ${icon}`} style={{ color: '#00963F', fontSize: 13 }} />
+        </div>
+        <span style={{ flex: 1, textAlign: 'left', fontWeight: 600, fontSize: 13, color: '#1e293b' }}>{title}</span>
+        <i className={`bi bi-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: 12, color: '#9ca3af' }} />
+      </button>
+      {open && (
+        <div style={{ padding: '14px 16px 16px' }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SituacaoPoliticaBadge({ value }: { value: string }) {
   const isEleito = value.toLowerCase().startsWith('eleito');
   return (
@@ -40,22 +63,43 @@ function SituacaoPoliticaBadge({ value }: { value: string }) {
   );
 }
 
-function CargoPoliticoTable({ rows }: { rows: CargoPoliticoHistorico[] }) {
+function CargoPoliticoTimeline({ rows }: { rows: CargoPoliticoHistorico[] }) {
+  if (rows.length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '28px 16px', color: '#9ca3af', fontSize: 13 }}>
+        <i className="bi bi-clock-history" style={{ fontSize: 28, color: '#d1d5db', display: 'block', marginBottom: 8 }} />
+        Nenhum cargo político registrado.
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {rows.map((r, i) => (
-        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 64px 1fr 100px 60px 48px 1fr', gap: 10, alignItems: 'center', padding: '10px 14px', background: '#f8fafc', borderRadius: 8, border: '1px solid #f0f0f0', fontSize: 13 }}>
-          <div><span style={{ fontWeight: 600, color: '#374151' }}>{r.cargo}</span></div>
-          <div style={{ color: '#6b7280' }}>{r.anoEleicao}</div>
-          <div><SituacaoPoliticaBadge value={r.situacao} /></div>
-          <div style={{ fontFamily: 'ui-monospace, monospace', color: '#374151', textAlign: 'right' }}>{r.totalVotos.toLocaleString('pt-BR')}</div>
-          <div>
-            <span style={{ background: r.eleito === 'Sim' ? '#dcfce7' : '#f3f4f6', color: r.eleito === 'Sim' ? '#15803d' : '#6b7280', borderRadius: 100, padding: '2px 8px', fontWeight: 600, fontSize: 11 }}>{r.eleito}</span>
+    <div style={{ position: 'relative', paddingLeft: 22 }}>
+      <div style={{ position: 'absolute', left: 7, top: 10, bottom: 10, width: 1, background: '#e5e7eb' }} />
+      {rows.map((r, i) => {
+        const eleito = r.eleito === 'Sim';
+        return (
+          <div key={i} style={{ position: 'relative', marginBottom: i < rows.length - 1 ? 14 : 0 }}>
+            <div style={{ position: 'absolute', left: -16, top: 8, width: 9, height: 9, borderRadius: '50%', background: eleito ? '#00963F' : '#d1d5db', border: '2px solid #fff', boxShadow: `0 0 0 1.5px ${eleito ? '#00963F' : '#d1d5db'}` }} />
+            <div style={{ background: '#f8fafc', border: '1px solid #edf2f7', borderRadius: 10, padding: '12px 14px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: '#1e293b', marginBottom: 2 }}>{r.cargo}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280' }}>{r.municipio}/{r.uf}</div>
+                </div>
+                <span style={{ background: eleito ? '#dcfce7' : '#f3f4f6', color: eleito ? '#15803d' : '#6b7280', borderRadius: 100, padding: '2px 10px', fontWeight: 600, fontSize: 11, flexShrink: 0 }}>
+                  {eleito ? 'Eleito' : 'Não eleito'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 18px', alignItems: 'center', fontSize: 12 }}>
+                <span style={{ color: '#6b7280' }}><span style={{ color: '#9ca3af', fontWeight: 600, marginRight: 4 }}>Ano</span>{r.anoEleicao}</span>
+                <span style={{ color: '#6b7280' }}><span style={{ color: '#9ca3af', fontWeight: 600, marginRight: 4 }}>Votos</span>{r.totalVotos.toLocaleString('pt-BR')}</span>
+                <SituacaoPoliticaBadge value={r.situacao} />
+              </div>
+            </div>
           </div>
-          <div style={{ color: '#00963F', fontWeight: 600 }}>{r.uf}</div>
-          <div style={{ color: '#6b7280', fontSize: 12 }}>{r.municipio}</div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -122,22 +166,20 @@ export default function PessoaDetalheModal({ item, onClose }: { item: Mandatario
         </div>
 
         {/* Corpo com scroll */}
-        <div style={{ overflowY: 'auto', padding: '22px 24px 28px', flex: 1 }}>
+        <div style={{ overflowY: 'auto', padding: '20px 20px 28px', flex: 1 }}>
 
-          <div style={{ marginBottom: 22 }}>
-            <SectionHeader icon="bi-person-fill" title="Identificação" />
+          <CollapsibleSection icon="bi-person-fill" title="Identificação" defaultOpen={true}>
             <FieldGrid fields={[
-              ['Nome completo',      ev(item.nome)],
-              ['Nome de urna',       ev(item.nomeUrna)],
-              ['CPF',                ev(item.cpf)],
-              ['Título de eleitor',  ev(item.tituloEleitor)],
-              ['Zona de votação',    ev(item.zonaVotacao)],
+              ['Nome completo',       ev(item.nome)],
+              ['Nome de urna',        ev(item.nomeUrna)],
+              ['CPF',                 ev(item.cpf)],
+              ['Título de eleitor',   ev(item.tituloEleitor)],
+              ['Zona de votação',     ev(item.zonaVotacao)],
               ['Ano pré-candidatura', item.anoPrecandidatura ? String(item.anoPrecandidatura) : '—'],
             ]} />
-          </div>
+          </CollapsibleSection>
 
-          <div style={{ marginBottom: 22 }}>
-            <SectionHeader icon="bi-card-list" title="Dados pessoais" />
+          <CollapsibleSection icon="bi-card-list" title="Dados pessoais">
             <FieldGrid fields={[
               ['Data de nascimento', ev(item.dataNascimento)],
               ['Idade',              item.idade ? `${item.idade} anos` : '—'],
@@ -148,19 +190,17 @@ export default function PessoaDetalheModal({ item, onClose }: { item: Mandatario
               ['Nacionalidade',      ev(item.nacionalidade)],
               ['Naturalidade',       ev(item.naturalidade)],
             ]} />
-          </div>
+          </CollapsibleSection>
 
-          <div style={{ marginBottom: 22 }}>
-            <SectionHeader icon="bi-diagram-3-fill" title="Filiação partidária" />
+          <CollapsibleSection icon="bi-diagram-3-fill" title="Filiação partidária">
             <FieldGrid fields={[
               ['Data de filiação',    ev(item.dataFiliacao)],
               ['Data de desfiliação', ev(item.dataDesfiliacao)],
               ['Situação',            ev(item.situacaoFiliacao) === '—' ? 'Regular' : ev(item.situacaoFiliacao)],
             ]} />
-          </div>
+          </CollapsibleSection>
 
-          <div style={{ marginBottom: 22 }}>
-            <SectionHeader icon="bi-geo-alt-fill" title="Endereço declarado na filiação" />
+          <CollapsibleSection icon="bi-geo-alt-fill" title="Endereço declarado na filiação">
             <FieldGrid fields={[
               ['UF',        ev(item.uf)],
               ['Município', ev(item.municipio)],
@@ -169,29 +209,24 @@ export default function PessoaDetalheModal({ item, onClose }: { item: Mandatario
               ['Bairro',    ev(item.bairro)],
               ['CEP',       ev(item.cep)],
             ]} />
-          </div>
+          </CollapsibleSection>
 
-          <div style={{ marginBottom: 22 }}>
-            <SectionHeader icon="bi-telephone-fill" title="Contato" />
+          <CollapsibleSection icon="bi-telephone-fill" title="Contato">
             <FieldGrid fields={[
               ['E-mail',        ev(item.email)],
               ['Celular',       ev(item.celular)],
               ['Telefone fixo', ev(item.telefone)],
             ]} />
-          </div>
+          </CollapsibleSection>
 
-          <div style={{ marginBottom: 22 }}>
+          {/* Histórico de cargos políticos — sempre visível */}
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #f0f4fb' }}>
             <SectionHeader icon="bi-award-fill" title="Histórico de cargos políticos" />
-            <div style={{ marginBottom: 8, display: 'grid', gridTemplateColumns: '1fr 64px 1fr 100px 60px 48px 1fr', gap: 10, padding: '0 14px' }}>
-              {['Cargo','Ano','Situação','Total votos','Eleito?','UF','Município'].map(h => (
-                <div key={h} style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</div>
-              ))}
-            </div>
-            <CargoPoliticoTable rows={cargosPolíticos} />
+            <CargoPoliticoTimeline rows={cargosPolíticos} />
           </div>
 
           {item.historicoOrgaos && item.historicoOrgaos.length > 0 && (
-            <div style={{ marginBottom: 4 }}>
+            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f4fb' }}>
               <SectionHeader icon="bi-building" title="Histórico de cargos partidários" />
               <div style={{ marginBottom: 8, display: 'grid', gridTemplateColumns: '1fr 180px 90px 1fr', gap: 10, padding: '0 14px' }}>
                 {['Cargo','Período','Abrangência','Local'].map(h => (
