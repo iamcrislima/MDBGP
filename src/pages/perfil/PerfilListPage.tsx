@@ -166,6 +166,7 @@ function PerfilModal({ perfil, isCreating, initialTab = 'dados', onClose, onSave
     setTimeout(() => {
       onSave({ ...perfil, ...form, identificador1doc: form.identificador1doc || undefined });
       setSaving(false);
+      if (!isCreating) setMode('view');
     }, 600);
   };
 
@@ -209,7 +210,7 @@ function PerfilModal({ perfil, isCreating, initialTab = 'dados', onClose, onSave
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(3px)', zIndex: 1060 }} />
 
-      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 560, maxWidth: 'calc(100vw - 32px)', maxHeight: '80vh', background: '#fff', borderRadius: 12, border: '0.5px solid #e5e7eb', boxShadow: '0 20px 60px rgba(0,0,0,0.20)', zIndex: 1070, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 560, maxWidth: 'calc(100vw - 32px)', height: '80vh', maxHeight: '90vh', background: '#fff', borderRadius: 12, border: '0.5px solid #e5e7eb', boxShadow: '0 20px 60px rgba(0,0,0,0.20)', zIndex: 1070, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
         <div style={{ padding: '16px 20px 0', borderBottom: '1px solid #e5e7eb', flexShrink: 0, background: '#fff' }}>
@@ -390,7 +391,11 @@ export default function PerfilListPage({ onNavigate }: { onNavigate: NavigateFn 
 
   const handleSave = (updated: Perfil) => {
     setData(p => modal?.isCreating ? [...p, updated] : p.map(x => x.id === updated.id ? updated : x));
-    setModal(null);
+    if (modal?.isCreating) {
+      setModal(null);
+    } else {
+      setModal(prev => prev ? { ...prev, perfil: updated } : null);
+    }
   };
 
   const columns: Column<Perfil>[] = [
@@ -451,7 +456,7 @@ export default function PerfilListPage({ onNavigate }: { onNavigate: NavigateFn 
       </div>
 
       {modal && (
-        <PerfilModal perfil={modal.perfil} isCreating={modal.isCreating} initialTab={modal.initialTab} onClose={() => setModal(null)} onSave={handleSave} />
+        <PerfilModal key={modal.perfil.id ?? 'new'} perfil={modal.perfil} isCreating={modal.isCreating} initialTab={modal.initialTab} onClose={() => setModal(null)} onSave={handleSave} />
       )}
 
       <ConfirmDialog open={deleteId !== null} title="Excluir perfil" message="Esta ação não pode ser desfeita. O perfil será removido permanentemente." confirmLabel="Excluir" confirmVariant="danger" onConfirm={doDelete} onCancel={() => setDeleteId(null)} />
