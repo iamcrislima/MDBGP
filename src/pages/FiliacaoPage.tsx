@@ -42,6 +42,36 @@ const EMPTY_F = {
   popMin: '', popMax: '',
 };
 
+const FEMALE_NAMES = ['ana','maria','francisca','adriana','fernanda','patricia','juliana','amanda','camila','beatriz','mariana','carla','luciana','daniela','roberta','angela','cristina','claudia','sandra','eliane','tereza','lucia','rosa','silvana','simone','fabiana','vanessa','leticia','bruna','natalia'];
+
+function getPhotoUrl(cpf: string, nome: string): string {
+  const digits = cpf.replace(/\D/g, '');
+  const photoId = parseInt(digits.slice(-2) || '0') % 100;
+  const first = nome.split(' ')[0]?.toLowerCase() ?? '';
+  const gender = FEMALE_NAMES.some(n => first.startsWith(n)) ? 'women' : 'men';
+  return `https://randomuser.me/api/portraits/${gender}/${photoId}.jpg`;
+}
+
+function PersonPhotoSmall({ cpf, nome }: { cpf: string; nome: string }) {
+  const [err, setErr] = React.useState(false);
+  const initials = nome.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  if (err) {
+    return (
+      <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#e8f5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#00963F', flexShrink: 0 }}>
+        {initials}
+      </div>
+    );
+  }
+  return (
+    <img
+      src={getPhotoUrl(cpf, nome)}
+      alt={nome}
+      onError={() => setErr(true)}
+      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '1.5px solid #e5e7eb' }}
+    />
+  );
+}
+
 function SituacaoBadge({ value }: { value: string }) {
   const map: Record<string, { bg: string; color: string }> = {
     Regular:     { bg: '#dcfce7', color: '#15803d' },
@@ -116,7 +146,15 @@ export default function FiliacaoPage({ onNavigate: _onNavigate }: { onNavigate: 
   const set = (k: keyof typeof EMPTY_F) => (v: string) => { setFilters(p => ({ ...p, [k]: v })); setPage(1); };
 
   const columns: Column<Filiado>[] = [
-    { key: 'nomeFiliado', label: 'Nome filiado' },
+    {
+      key: 'nomeFiliado', label: 'Nome filiado',
+      render: r => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <PersonPhotoSmall cpf={r.cpf} nome={r.nomeFiliado} />
+          <span style={{ fontWeight: 500 }}>{r.nomeFiliado}</span>
+        </div>
+      ),
+    },
     { key: 'cpf', label: 'CPF', width: 130 },
     { key: 'situacao', label: 'Situação', render: r => <SituacaoBadge value={r.situacao} /> },
     { key: 'mandatarioAtual', label: 'Mandatário?', width: 110, render: r => <MandatarioBadge value={r.mandatarioAtual} /> },
@@ -272,7 +310,10 @@ export default function FiliacaoPage({ onNavigate: _onNavigate }: { onNavigate: 
             return (
               <div style={{ background: '#fff', border: '1px solid #dde3ee', borderRadius: 10, padding: '14px 16px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: '#111827', flex: 1, marginRight: 8 }}>{r.nomeFiliado}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, marginRight: 8 }}>
+                    <PersonPhotoSmall cpf={r.cpf} nome={r.nomeFiliado} />
+                    <div style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>{r.nomeFiliado}</div>
+                  </div>
                   <SituacaoBadge value={r.situacao} />
                 </div>
                 <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 2, fontFamily: 'monospace' }}>{r.cpf}</div>

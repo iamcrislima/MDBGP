@@ -35,28 +35,30 @@ const KPIS = {
 };
 
 const FUNIL_STAGES = [
-  { label: 'Publicidade',            count: 203 },
-  { label: 'Filiação',               count: 156 },
-  { label: 'Conferência Municipal',  count: 98  },
-  { label: 'Conferência Estadual',   count: 70  },
+  { label: 'Publicidade', count: 203 },
+  { label: 'Filiação',    count: 156 },
+  { label: 'Conferência', count: 168 },
+  // 203 + 156 + 168 = 527 = KPIS.andamento
 ];
 
 const WEEKS_LABELS = ['23/03','30/03','06/04','13/04','20/04','27/04','04/05','11/05','18/05','25/05','01/06','08/06'];
-const NOVAS_D    = [45, 52, 38, 61, 57, 48, 73, 69, 44, 58, 76, 62];
-const DEF_D      = [32, 38, 28, 45, 41, 35, 55, 51, 32, 43, 57, 46];
-const INDEF_D    = [8,  10, 7,  12, 11, 9,  14, 13, 8,  11, 15, 12];
+// Snapshot semanal — Pendentes oscila (entrada vs saída), Deferidas/Indeferidas sobem. Termina nos KPIs.
+const PEND_ACUM  = [432, 451, 441, 462, 453, 476, 468, 489, 481, 505, 516, 527];
+const DEF_ACUM   = [647, 662, 675, 692, 709, 724, 738, 754, 765, 778, 784, 789];
+const INDEF_ACUM = [338, 344, 355, 361, 372, 378, 387, 395, 400, 407, 410, 413];
 
+// Valores escalados para que: Σandamento=527, Σdeferido=789, Σindeferido=413 (= KPIS totais)
 const STATE_DATA = [
-  { uf: 'SP', deferido: 89, andamento: 67, indeferido: 45 },
-  { uf: 'RS', deferido: 72, andamento: 58, indeferido: 32 },
-  { uf: 'MG', deferido: 68, andamento: 51, indeferido: 28 },
-  { uf: 'SC', deferido: 61, andamento: 47, indeferido: 24 },
-  { uf: 'BA', deferido: 55, andamento: 43, indeferido: 21 },
-  { uf: 'PR', deferido: 48, andamento: 39, indeferido: 19 },
-  { uf: 'RJ', deferido: 44, andamento: 35, indeferido: 17 },
-  { uf: 'CE', deferido: 38, andamento: 31, indeferido: 15 },
-  { uf: 'GO', deferido: 33, andamento: 27, indeferido: 13 },
-  { uf: 'PE', deferido: 28, andamento: 23, indeferido: 11 },
+  { uf: 'SP', deferido: 131, andamento: 82, indeferido: 83 },
+  { uf: 'RS', deferido: 106, andamento: 73, indeferido: 59 },
+  { uf: 'MG', deferido: 100, andamento: 64, indeferido: 51 },
+  { uf: 'SC', deferido:  90, andamento: 59, indeferido: 44 },
+  { uf: 'BA', deferido:  81, andamento: 54, indeferido: 39 },
+  { uf: 'PR', deferido:  71, andamento: 49, indeferido: 35 },
+  { uf: 'RJ', deferido:  65, andamento: 44, indeferido: 31 },
+  { uf: 'CE', deferido:  56, andamento: 39, indeferido: 28 },
+  { uf: 'GO', deferido:  49, andamento: 34, indeferido: 24 },
+  { uf: 'PE', deferido:  40, andamento: 29, indeferido: 19 },
 ].sort((a, b) => b.andamento - a.andamento);
 
 interface OldestItem {
@@ -66,25 +68,30 @@ interface OldestItem {
 }
 
 const OLDEST_PENDING: OldestItem[] = [
-  { id: 1,  protocolo: '2024/000042-7', nome: 'Ana Paula Ferreira Silva',       uf: 'SC', municipio: 'Florianópolis',        etapa: 'Conferência Estadual',  dtAbertura: '15/03/2024', diasAbertos: 826 },
+  { id: 1,  protocolo: '2024/000042-7', nome: 'Ana Paula Ferreira Silva',       uf: 'SC', municipio: 'Florianópolis',        etapa: 'Conferência',  dtAbertura: '15/03/2024', diasAbertos: 826 },
   { id: 2,  protocolo: '2024/000127-9', nome: 'Maria José Oliveira Costa',      uf: 'RS', municipio: 'Porto Alegre',         etapa: 'Filiação',              dtAbertura: '05/04/2024', diasAbertos: 805 },
   { id: 3,  protocolo: '2024/000091-8', nome: 'José Augusto Ferreira Gomes',    uf: 'SC', municipio: 'Joinville',             etapa: 'Publicidade',           dtAbertura: '10/05/2024', diasAbertos: 770 },
   { id: 4,  protocolo: '2024/000108-2', nome: 'João Roberto Alves Pereira',     uf: 'MG', municipio: 'Belo Horizonte',       etapa: 'Publicidade',           dtAbertura: '12/04/2024', diasAbertos: 797 },
   { id: 5,  protocolo: '2024/000143-5', nome: 'Paulo Henrique Carvalho Dias',   uf: 'RJ', municipio: 'Rio de Janeiro',       etapa: 'Filiação',              dtAbertura: '23/05/2024', diasAbertos: 756 },
   { id: 6,  protocolo: '2024/000063-3', nome: 'Marcos Antonio Pinheiro Cruz',   uf: 'CE', municipio: 'Fortaleza',             etapa: 'Publicidade',           dtAbertura: '08/06/2024', diasAbertos: 740 },
-  { id: 7,  protocolo: '2024/000199-7', nome: 'Roberto Carlos Mendonça',        uf: 'BA', municipio: 'Feira de Santana',     etapa: 'Conferência Municipal', dtAbertura: '22/06/2024', diasAbertos: 726 },
+  { id: 7,  protocolo: '2024/000199-7', nome: 'Roberto Carlos Mendonça',        uf: 'BA', municipio: 'Feira de Santana',     etapa: 'Conferência', dtAbertura: '22/06/2024', diasAbertos: 726 },
   { id: 8,  protocolo: '2024/000156-1', nome: 'Diego Henrique Teixeira Sousa',  uf: 'SP', municipio: 'Santos',                etapa: 'Publicidade',           dtAbertura: '06/07/2024', diasAbertos: 712 },
   { id: 9,  protocolo: '2024/000178-4', nome: 'Andreia Paula Coelho Gomes',     uf: 'GO', municipio: 'Aparecida de Goiânia', etapa: 'Publicidade',           dtAbertura: '27/07/2024', diasAbertos: 691 },
   { id: 10, protocolo: '2024/000214-3', nome: 'Sebastião Luiz Cardoso Melo',    uf: 'PE', municipio: 'Recife',                etapa: 'Filiação',              dtAbertura: '03/08/2024', diasAbertos: 684 },
 ].sort((a, b) => b.diasAbertos - a.diasAbertos);
 
-// ── Helper components ─────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function protocoloToUrl(protocolo: string): string {
+  const [year, rest] = protocolo.split('/');
+  const num = rest?.split('-')[0] ?? '';
+  return `https://mdb.1doc.com.br/processo/PROC-${year}-${num}`;
+}
+
 const ETAPA_COLORS: Record<string, [string, string]> = {
-  'Publicidade':            ['#f0f9ff', '#0284c7'],
-  'Filiação':               ['#fdf4ff', '#9333ea'],
-  'Conferência Municipal':  ['#fff7ed', '#c2410c'],
-  'Conferência Estadual':   ['#fff3f3', '#9a3412'],
-  'Etapa final':            ['#f0fdf4', '#15803d'],
+  'Publicidade': ['#f0f9ff', '#0284c7'],
+  'Filiação':    ['#fdf4ff', '#9333ea'],
+  'Conferência': ['#fff7ed', '#c2410c'],
+  'Etapa final': ['#f0fdf4', '#15803d'],
 };
 
 function EtapaBadge({ etapa }: { etapa: string }) {
@@ -123,36 +130,36 @@ export default function VisaoGeralFiliacaoPage({ onNavigate }: { onNavigate: Nav
     labels: WEEKS_LABELS,
     datasets: [
       {
-        label: 'Novas solicitações',
-        data: NOVAS_D,
+        label: 'Deferidas',
+        data: DEF_ACUM,
         borderColor: '#00963F',
-        backgroundColor: 'rgba(232,245,233,0.4)',
+        backgroundColor: 'rgba(0,150,63,0.08)',
         fill: true,
-        tension: 0.4,
+        tension: 0.5,
         pointRadius: 3,
         pointBackgroundColor: '#00963F',
         borderWidth: 2,
       },
       {
-        label: 'Deferidas',
-        data: DEF_D,
-        borderColor: '#4CAF50',
-        borderDash: [5, 5],
-        backgroundColor: 'transparent',
-        fill: false,
-        tension: 0.4,
-        pointRadius: 2,
+        label: 'Pendentes',
+        data: PEND_ACUM,
+        borderColor: '#b45309',
+        backgroundColor: 'rgba(254,243,199,0.5)',
+        fill: true,
+        tension: 0.5,
+        pointRadius: 3,
+        pointBackgroundColor: '#b45309',
         borderWidth: 2,
       },
       {
         label: 'Indeferidas',
-        data: INDEF_D,
-        borderColor: '#d4a000',
-        borderDash: [5, 5],
-        backgroundColor: 'transparent',
-        fill: false,
-        tension: 0.4,
-        pointRadius: 2,
+        data: INDEF_ACUM,
+        borderColor: '#E53E3E',
+        backgroundColor: 'rgba(229,62,62,0.07)',
+        fill: true,
+        tension: 0.5,
+        pointRadius: 3,
+        pointBackgroundColor: '#E53E3E',
         borderWidth: 2,
       },
     ],
@@ -180,7 +187,7 @@ export default function VisaoGeralFiliacaoPage({ onNavigate }: { onNavigate: Nav
     labels: STATE_DATA.map(s => s.uf),
     datasets: [
       { label: 'Deferido',     data: STATE_DATA.map(s => s.deferido),  backgroundColor: '#00963F' },
-      { label: 'Em andamento', data: STATE_DATA.map(s => s.andamento), backgroundColor: '#FFD000' },
+      { label: 'Pendentes',    data: STATE_DATA.map(s => s.andamento), backgroundColor: '#FFD000' },
       { label: 'Indeferido',   data: STATE_DATA.map(s => s.indeferido),backgroundColor: '#E53E3E' },
     ],
   };
@@ -189,13 +196,29 @@ export default function VisaoGeralFiliacaoPage({ onNavigate }: { onNavigate: Nav
     indexAxis: 'y' as const,
     responsive: true,
     maintainAspectRatio: false,
+    // axis:'y' is required for correct hover matching on horizontal bar charts
+    interaction: { mode: 'index' as const, intersect: false, axis: 'y' as const },
+    onClick: (event: unknown, _elements: unknown, chart: { getElementsAtEventForMode: (e: MouseEvent, mode: string, opts: object, useFinalPosition: boolean) => { index: number; datasetIndex: number }[] }) => {
+      const nativeEvent = (event as { native?: MouseEvent }).native;
+      if (!nativeEvent) return;
+      // use 'point' mode to get the exact segment clicked (not all datasets at row)
+      const clicked = chart.getElementsAtEventForMode(nativeEvent, 'point', { intersect: true }, false);
+      if (clicked.length === 0) return;
+      const { index, datasetIndex } = clicked[0];
+      const uf = STATE_DATA[index].uf;
+      // dataset order: 0=Deferido, 1=Pendente, 2=Indeferido (matches stackedBarData)
+      const statusMap = ['Deferido', 'Pendente', 'Indeferido'];
+      const status = statusMap[datasetIndex] ?? '';
+      sessionStorage.setItem('fp-filter', JSON.stringify({ uf, status }));
+      onNavigate('gerenciar-filiados');
+    },
     plugins: {
       legend: {
         display: true,
         position: 'top' as const,
         labels: { font: { family: 'Open Sans', size: 11 }, usePointStyle: true, padding: 16, boxWidth: 12 },
       },
-      tooltip: { mode: 'index' as const, intersect: false },
+      tooltip: {},
     },
     scales: {
       x: { stacked: true, grid: gridStyle, ticks: tickStyle },
@@ -205,7 +228,7 @@ export default function VisaoGeralFiliacaoPage({ onNavigate }: { onNavigate: Nav
 
   // ── Donut ──
   const donutData = {
-    labels: ['Em andamento', 'Deferido', 'Indeferido'],
+    labels: ['Pendentes', 'Deferido', 'Indeferido'],
     datasets: [{
       data: [KPIS.andamento, KPIS.deferidos, KPIS.indeferidos],
       backgroundColor: ['#FFD000', '#00963F', '#E53E3E'],
@@ -326,7 +349,7 @@ export default function VisaoGeralFiliacaoPage({ onNavigate }: { onNavigate: Nav
           <div style={{ fontSize: 28, fontWeight: 700, color: '#111827', lineHeight: 1 }}>
             {KPIS.andamento.toLocaleString('pt-BR')}
           </div>
-          <div style={{ fontSize: 13, color: '#6b7280', marginTop: 6 }}>Em andamento</div>
+          <div style={{ fontSize: 13, color: '#6b7280', marginTop: 6 }}>Pendentes</div>
           <div style={{ fontSize: 12, color: '#b45309', marginTop: 4, fontWeight: 600 }}>▲ 23 novas hoje</div>
         </div>
 
@@ -419,7 +442,7 @@ export default function VisaoGeralFiliacaoPage({ onNavigate }: { onNavigate: Nav
 
         {/* Tendência temporal */}
         <div style={card}>
-          {sectionHead('Tendência temporal', 'novas solicitações por semana nos últimos 3 meses', 'bi-graph-up')}
+          {sectionHead('Evolução acumulada', 'total por situação semana a semana — último trimestre', 'bi-graph-up')}
           <div style={{ padding: '16px 20px', height: isMobile ? 200 : 272 }}>
             <Line data={lineData} options={lineOpts as object} />
           </div>
@@ -457,7 +480,7 @@ export default function VisaoGeralFiliacaoPage({ onNavigate }: { onNavigate: Nav
             {/* Custom legend */}
             <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
-                { label: 'Em andamento', value: KPIS.andamento,   color: '#FFD000' },
+                { label: 'Pendentes',    value: KPIS.andamento,   color: '#FFD000' },
                 { label: 'Deferido',     value: KPIS.deferidos,   color: '#00963F' },
                 { label: 'Indeferido',   value: KPIS.indeferidos, color: '#E53E3E' },
               ].map(item => (
@@ -498,7 +521,12 @@ export default function VisaoGeralFiliacaoPage({ onNavigate }: { onNavigate: Nav
             {OLDEST_PENDING.map(item => (
               <div key={item.id} style={{ border: '1px solid #fee2e2', borderRadius: 10, padding: '12px 14px', background: '#fff' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                  <button onClick={() => onNavigate('gerenciar-filiados')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#00963F', fontWeight: 600, fontSize: 12, fontFamily: 'Open Sans, sans-serif', textDecoration: 'underline' }}>{item.protocolo}</button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <button onClick={() => onNavigate('gerenciar-filiados')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#00963F', fontWeight: 600, fontSize: 12, fontFamily: 'Open Sans, sans-serif', textDecoration: 'underline' }}>{item.protocolo}</button>
+                    <a href={protocoloToUrl(item.protocolo)} target="_blank" rel="noopener noreferrer" title="Abrir no 1Doc" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, background: '#1351b4', borderRadius: 4, color: '#fff', textDecoration: 'none' }}>
+                      <i className="bi bi-box-arrow-up-right" style={{ fontSize: 10 }} />
+                    </a>
+                  </div>
                   <DiasBadge dias={item.diasAbertos} />
                 </div>
                 <div style={{ fontWeight: 600, fontSize: 13, color: '#111827', marginBottom: 2 }}>{item.nome}</div>
@@ -571,12 +599,23 @@ function TableRow({ item, isEven, onNavigate }: { item: OldestItem; isEven: bool
       onMouseLeave={() => setHov(false)}
     >
       <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
-        <button
-          onClick={() => onNavigate('gerenciar-filiados')}
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#00963F', fontWeight: 600, fontSize: 13, fontFamily: 'Open Sans, sans-serif', textDecoration: 'underline' }}
-        >
-          {item.protocolo}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button
+            onClick={() => onNavigate('gerenciar-filiados')}
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: '#00963F', fontWeight: 600, fontSize: 13, fontFamily: 'Open Sans, sans-serif', textDecoration: 'underline' }}
+          >
+            {item.protocolo}
+          </button>
+          <a
+            href={protocoloToUrl(item.protocolo)}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Abrir processo no 1Doc"
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, background: '#1351b4', borderRadius: 5, color: '#fff', flexShrink: 0, textDecoration: 'none' }}
+          >
+            <i className="bi bi-box-arrow-up-right" style={{ fontSize: 11 }} />
+          </a>
+        </div>
       </td>
       <td style={{ padding: '12px 16px', fontWeight: 500, color: '#111827', whiteSpace: 'nowrap' }}>{item.nome}</td>
       <td style={{ padding: '12px 16px', color: '#6b7280', whiteSpace: 'nowrap' }}>
