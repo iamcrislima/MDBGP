@@ -2,10 +2,11 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { NavigateFn } from '../types';
 import DatePicker from '../components/shared/DatePicker';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 /* ─── types ─────────────────────────────────────────────────────────────── */
 type Etapa    = 'Publicidade' | 'Filiação' | 'Conferência' | 'Etapa final';
-type StatusFP = 'Em andamento' | 'Deferido' | 'Indeferido';
+type StatusFP = 'Pendente' | 'Deferido' | 'Indeferido';
 interface HistEntry { etapa: string; data: string; resp: string }
 interface FP {
   id: number; protocolo: string; processoId: string; processoLink: string;
@@ -22,9 +23,9 @@ interface FP {
 const ETAPAS: Etapa[] = ['Publicidade', 'Filiação', 'Conferência', 'Etapa final'];
 
 const STATUS_CFG: Record<StatusFP, { bg: string; color: string; icon: string }> = {
-  'Em andamento': { bg: '#fff7ed', color: '#c2410c', icon: 'bi-clock-fill' },
-  'Deferido':     { bg: '#dcfce7', color: '#15803d', icon: 'bi-check-circle-fill' },
-  'Indeferido':   { bg: '#fee2e2', color: '#dc2626', icon: 'bi-x-circle-fill' },
+  'Pendente':   { bg: '#fff7ed', color: '#c2410c', icon: 'bi-clock-fill' },
+  'Deferido':   { bg: '#dcfce7', color: '#15803d', icon: 'bi-check-circle-fill' },
+  'Indeferido': { bg: '#fee2e2', color: '#dc2626', icon: 'bi-x-circle-fill' },
 };
 
 const UF_MUNS: Record<string, string[]> = {
@@ -61,25 +62,25 @@ function genHist(etapa: Etapa, base: string): HistEntry[] {
 
 type B = Omit<FP,'id'|'protocolo'|'processoId'|'processoLink'|'historico'>;
 const BASE: B[] = [
-  { nome:'Ana Paula Ferreira Silva',       cpf:'032.***.***-41', dtNasc:'15/03/1985', email:'ana.silva@email.com',        celular:'(48) 99876-5432', uf:'SC', municipio:'Florianópolis',        domEleitoral:'Florianópolis - SC',        dtAbertura:'15/03/2024', dtAberturaDt:'2024-03-15', dtPreenchimento:'15/03/2024 14:32', tipoDiretorio:'Municipal', etapa:'Conferência',  status:'Em andamento', enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'15/03/2024 14:35' },
+  { nome:'Ana Paula Ferreira Silva',       cpf:'032.***.***-41', dtNasc:'15/03/1985', email:'ana.silva@email.com',        celular:'(48) 99876-5432', uf:'SC', municipio:'Florianópolis',        domEleitoral:'Florianópolis - SC',        dtAbertura:'15/03/2024', dtAberturaDt:'2024-03-15', dtPreenchimento:'15/03/2024 14:32', tipoDiretorio:'Municipal', etapa:'Conferência',  status:'Pendente', enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'15/03/2024 14:35' },
   { nome:'Carlos Eduardo Santos Lima',     cpf:'587.***.***-23', dtNasc:'22/07/1978', email:'carlos.lima@email.com',      celular:'(11) 98765-4321', uf:'SP', municipio:'São Paulo',            domEleitoral:'São Paulo - SP',            dtAbertura:'20/03/2024', dtAberturaDt:'2024-03-20', dtPreenchimento:'20/03/2024 09:15', tipoDiretorio:'Estadual', etapa:'Etapa final',   status:'Deferido',     enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'20/03/2024 10:00' },
-  { nome:'Maria José Oliveira Costa',      cpf:'341.***.***-55', dtNasc:'08/11/1990', email:'maria.costa@email.com',      celular:'(51) 97654-3210', uf:'RS', municipio:'Porto Alegre',         domEleitoral:'Porto Alegre - RS',         dtAbertura:'05/04/2024', dtAberturaDt:'2024-04-05', dtPreenchimento:'05/04/2024 11:00', tipoDiretorio:'Municipal', etapa:'Filiação',     status:'Em andamento', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'05/04/2024 11:05' },
+  { nome:'Maria José Oliveira Costa',      cpf:'341.***.***-55', dtNasc:'08/11/1990', email:'maria.costa@email.com',      celular:'(51) 97654-3210', uf:'RS', municipio:'Porto Alegre',         domEleitoral:'Porto Alegre - RS',         dtAbertura:'05/04/2024', dtAberturaDt:'2024-04-05', dtPreenchimento:'05/04/2024 11:00', tipoDiretorio:'Municipal', etapa:'Filiação',     status:'Pendente', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'05/04/2024 11:05' },
   { nome:'João Roberto Alves Pereira',     cpf:'029.***.***-17', dtNasc:'14/05/1965', email:'joao.pereira@email.com',     celular:'(31) 96543-2109', uf:'MG', municipio:'Belo Horizonte',       domEleitoral:'Belo Horizonte - MG',       dtAbertura:'12/04/2024', dtAberturaDt:'2024-04-12', dtPreenchimento:'12/04/2024 16:20', tipoDiretorio:'Estadual', etapa:'Publicidade',  status:'Indeferido',   enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'12/04/2024 17:00' },
   { nome:'Francisca Aparecida Souza',      cpf:'456.***.***-88', dtNasc:'30/09/1982', email:'franca.souza@email.com',     celular:'(71) 95432-1098', uf:'BA', municipio:'Salvador',              domEleitoral:'Salvador - BA',             dtAbertura:'18/04/2024', dtAberturaDt:'2024-04-18', dtPreenchimento:'18/04/2024 10:45', tipoDiretorio:'Municipal', etapa:'Filiação',     status:'Deferido',     enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'18/04/2024 11:00' },
   { nome:'Antonio Carlos Rodrigues Neto',  cpf:'193.***.***-62', dtNasc:'03/02/1975', email:'antonio.rod@email.com',      celular:'(62) 94321-0987', uf:'GO', municipio:'Goiânia',               domEleitoral:'Goiânia - GO',              dtAbertura:'25/04/2024', dtAberturaDt:'2024-04-25', dtPreenchimento:'25/04/2024 13:30', tipoDiretorio:'Municipal', etapa:'Conferência',  status:'Deferido',     enviadoMunicipal:true,  enviadoEstadual:false, dtProcessoInterno:'25/04/2024 14:00' },
   { nome:'Adriana Lucia Martins Cunha',    cpf:'771.***.***-34', dtNasc:'19/08/1988', email:'adriana.cunha@email.com',    celular:'(41) 93210-9876', uf:'PR', municipio:'Curitiba',              domEleitoral:'Curitiba - PR',             dtAbertura:'02/05/2024', dtAberturaDt:'2024-05-02', dtPreenchimento:'02/05/2024 08:50', tipoDiretorio:'Estadual', etapa:'Etapa final',   status:'Deferido',     enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'02/05/2024 09:00' },
-  { nome:'José Augusto Ferreira Gomes',    cpf:'284.***.***-91', dtNasc:'27/01/1971', email:'jose.gomes@email.com',       celular:'(47) 99109-8765', uf:'SC', municipio:'Joinville',             domEleitoral:'Joinville - SC',            dtAbertura:'10/05/2024', dtAberturaDt:'2024-05-10', dtPreenchimento:'10/05/2024 15:10', tipoDiretorio:'Municipal', etapa:'Publicidade',  status:'Em andamento', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'10/05/2024 15:15' },
+  { nome:'José Augusto Ferreira Gomes',    cpf:'284.***.***-91', dtNasc:'27/01/1971', email:'jose.gomes@email.com',       celular:'(47) 99109-8765', uf:'SC', municipio:'Joinville',             domEleitoral:'Joinville - SC',            dtAbertura:'10/05/2024', dtAberturaDt:'2024-05-10', dtPreenchimento:'10/05/2024 15:10', tipoDiretorio:'Municipal', etapa:'Publicidade',  status:'Pendente', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'10/05/2024 15:15' },
   { nome:'Sandra Regina Barbosa Lima',     cpf:'512.***.***-07', dtNasc:'06/06/1993', email:'sandra.lima@email.com',      celular:'(19) 98098-7654', uf:'SP', municipio:'Campinas',              domEleitoral:'Campinas - SP',             dtAbertura:'17/05/2024', dtAberturaDt:'2024-05-17', dtPreenchimento:'17/05/2024 12:25', tipoDiretorio:'Municipal', etapa:'Conferência',  status:'Indeferido',   enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'17/05/2024 12:30' },
-  { nome:'Paulo Henrique Carvalho Dias',   cpf:'638.***.***-45', dtNasc:'11/12/1980', email:'paulo.dias@email.com',       celular:'(21) 97087-6543', uf:'RJ', municipio:'Rio de Janeiro',       domEleitoral:'Rio de Janeiro - RJ',       dtAbertura:'23/05/2024', dtAberturaDt:'2024-05-23', dtPreenchimento:'23/05/2024 09:40', tipoDiretorio:'Estadual', etapa:'Filiação',     status:'Em andamento', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'23/05/2024 10:00' },
+  { nome:'Paulo Henrique Carvalho Dias',   cpf:'638.***.***-45', dtNasc:'11/12/1980', email:'paulo.dias@email.com',       celular:'(21) 97087-6543', uf:'RJ', municipio:'Rio de Janeiro',       domEleitoral:'Rio de Janeiro - RJ',       dtAbertura:'23/05/2024', dtAberturaDt:'2024-05-23', dtPreenchimento:'23/05/2024 09:40', tipoDiretorio:'Estadual', etapa:'Filiação',     status:'Pendente', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'23/05/2024 10:00' },
   { nome:'Luciana Cristina Freitas',       cpf:'095.***.***-78', dtNasc:'24/04/1987', email:'luciana.freitas@email.com',  celular:'(54) 96076-5432', uf:'RS', municipio:'Caxias do Sul',        domEleitoral:'Caxias do Sul - RS',        dtAbertura:'01/06/2024', dtAberturaDt:'2024-06-01', dtPreenchimento:'01/06/2024 14:55', tipoDiretorio:'Municipal', etapa:'Etapa final',   status:'Deferido',     enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'01/06/2024 15:00' },
-  { nome:'Marcos Antonio Pinheiro Cruz',   cpf:'347.***.***-26', dtNasc:'16/10/1969', email:'marcos.cruz@email.com',      celular:'(85) 95065-4321', uf:'CE', municipio:'Fortaleza',             domEleitoral:'Fortaleza - CE',            dtAbertura:'08/06/2024', dtAberturaDt:'2024-06-08', dtPreenchimento:'08/06/2024 11:20', tipoDiretorio:'Municipal', etapa:'Publicidade',  status:'Em andamento', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'08/06/2024 11:25' },
+  { nome:'Marcos Antonio Pinheiro Cruz',   cpf:'347.***.***-26', dtNasc:'16/10/1969', email:'marcos.cruz@email.com',      celular:'(85) 95065-4321', uf:'CE', municipio:'Fortaleza',             domEleitoral:'Fortaleza - CE',            dtAbertura:'08/06/2024', dtAberturaDt:'2024-06-08', dtPreenchimento:'08/06/2024 11:20', tipoDiretorio:'Municipal', etapa:'Publicidade',  status:'Pendente', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'08/06/2024 11:25' },
   { nome:'Tereza Cristina Rocha Alves',    cpf:'829.***.***-53', dtNasc:'02/07/1994', email:'tereza.rocha@email.com',     celular:'(34) 94054-3210', uf:'MG', municipio:'Uberlândia',            domEleitoral:'Uberlândia - MG',           dtAbertura:'15/06/2024', dtAberturaDt:'2024-06-15', dtPreenchimento:'15/06/2024 16:05', tipoDiretorio:'Estadual', etapa:'Filiação',     status:'Indeferido',   enviadoMunicipal:true,  enviadoEstadual:false, dtProcessoInterno:'15/06/2024 16:10' },
-  { nome:'Roberto Carlos Mendonça',        cpf:'164.***.***-81', dtNasc:'20/03/1977', email:'roberto.mendonca@email.com', celular:'(75) 93043-2109', uf:'BA', municipio:'Feira de Santana',      domEleitoral:'Feira de Santana - BA',     dtAbertura:'22/06/2024', dtAberturaDt:'2024-06-22', dtPreenchimento:'22/06/2024 10:30', tipoDiretorio:'Municipal', etapa:'Conferência',  status:'Em andamento', enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'22/06/2024 10:35' },
+  { nome:'Roberto Carlos Mendonça',        cpf:'164.***.***-81', dtNasc:'20/03/1977', email:'roberto.mendonca@email.com', celular:'(75) 93043-2109', uf:'BA', municipio:'Feira de Santana',      domEleitoral:'Feira de Santana - BA',     dtAbertura:'22/06/2024', dtAberturaDt:'2024-06-22', dtPreenchimento:'22/06/2024 10:30', tipoDiretorio:'Municipal', etapa:'Conferência',  status:'Pendente', enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'22/06/2024 10:35' },
   { nome:'Eliane Aparecida Cunha Ramos',   cpf:'503.***.***-39', dtNasc:'09/09/1983', email:'eliane.ramos@email.com',     celular:'(47) 92032-1098', uf:'SC', municipio:'Blumenau',              domEleitoral:'Blumenau - SC',             dtAbertura:'29/06/2024', dtAberturaDt:'2024-06-29', dtPreenchimento:'29/06/2024 08:15', tipoDiretorio:'Municipal', etapa:'Etapa final',   status:'Deferido',     enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'29/06/2024 08:20' },
-  { nome:'Diego Henrique Teixeira Sousa',  cpf:'716.***.***-64', dtNasc:'17/02/1996', email:'diego.sousa@email.com',      celular:'(13) 91021-0987', uf:'SP', municipio:'Santos',                domEleitoral:'Santos - SP',               dtAbertura:'06/07/2024', dtAberturaDt:'2024-07-06', dtPreenchimento:'06/07/2024 13:50', tipoDiretorio:'Municipal', etapa:'Publicidade',  status:'Em andamento', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'06/07/2024 13:55' },
+  { nome:'Diego Henrique Teixeira Sousa',  cpf:'716.***.***-64', dtNasc:'17/02/1996', email:'diego.sousa@email.com',      celular:'(13) 91021-0987', uf:'SP', municipio:'Santos',                domEleitoral:'Santos - SP',               dtAbertura:'06/07/2024', dtAberturaDt:'2024-07-06', dtPreenchimento:'06/07/2024 13:50', tipoDiretorio:'Municipal', etapa:'Publicidade',  status:'Pendente', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'06/07/2024 13:55' },
   { nome:'Camila Fernanda Moreira Lima',   cpf:'258.***.***-12', dtNasc:'31/05/1991', email:'camila.lima@email.com',      celular:'(43) 90010-9876', uf:'PR', municipio:'Londrina',              domEleitoral:'Londrina - PR',             dtAbertura:'13/07/2024', dtAberturaDt:'2024-07-13', dtPreenchimento:'13/07/2024 14:00', tipoDiretorio:'Municipal', etapa:'Filiação',     status:'Deferido',     enviadoMunicipal:true,  enviadoEstadual:false, dtProcessoInterno:'13/07/2024 14:05' },
   { nome:'Felipe Augusto Nascimento',      cpf:'481.***.***-97', dtNasc:'05/11/1973', email:'felipe.nasc@email.com',      celular:'(98) 99909-8765', uf:'MA', municipio:'São Luís',              domEleitoral:'São Luís - MA',             dtAbertura:'20/07/2024', dtAberturaDt:'2024-07-20', dtPreenchimento:'20/07/2024 09:30', tipoDiretorio:'Estadual', etapa:'Conferência',  status:'Indeferido',   enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'20/07/2024 09:35' },
-  { nome:'Andreia Paula Coelho Gomes',     cpf:'873.***.***-43', dtNasc:'28/08/1989', email:'andreia.gomes@email.com',    celular:'(62) 98898-7654', uf:'GO', municipio:'Aparecida de Goiânia', domEleitoral:'Aparecida de Goiânia - GO', dtAbertura:'27/07/2024', dtAberturaDt:'2024-07-27', dtPreenchimento:'27/07/2024 11:15', tipoDiretorio:'Municipal', etapa:'Publicidade',  status:'Em andamento', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'27/07/2024 11:20' },
+  { nome:'Andreia Paula Coelho Gomes',     cpf:'873.***.***-43', dtNasc:'28/08/1989', email:'andreia.gomes@email.com',    celular:'(62) 98898-7654', uf:'GO', municipio:'Aparecida de Goiânia', domEleitoral:'Aparecida de Goiânia - GO', dtAbertura:'27/07/2024', dtAberturaDt:'2024-07-27', dtPreenchimento:'27/07/2024 11:15', tipoDiretorio:'Municipal', etapa:'Publicidade',  status:'Pendente', enviadoMunicipal:false, enviadoEstadual:false, dtProcessoInterno:'27/07/2024 11:20' },
   { nome:'Sebastião Luiz Cardoso Melo',    cpf:'126.***.***-85', dtNasc:'12/04/1963', email:'sebastiao.melo@email.com',   celular:'(81) 97887-6543', uf:'PE', municipio:'Recife',                domEleitoral:'Recife - PE',               dtAbertura:'03/08/2024', dtAberturaDt:'2024-08-03', dtPreenchimento:'03/08/2024 15:45', tipoDiretorio:'Estadual', etapa:'Etapa final',   status:'Deferido',     enviadoMunicipal:true,  enviadoEstadual:true,  dtProcessoInterno:'03/08/2024 15:50' },
 ];
 
@@ -262,15 +263,41 @@ function StatusBadge({ status }: { status: StatusFP }) {
   );
 }
 
-/* ─── Avatar ────────────────────────────────────────────────────────────── */
+/* ─── Avatar (fallback) ─────────────────────────────────────────────────── */
 function Avatar({ nome, size = 64 }: { nome: string; size?: number }) {
   const initials = nome.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-  const palette = ['#2563eb','#7c3aed','#db2777','#059669','#d97706','#0891b2','#dc2626'];
+  const palette = ['#00963F','#7c3aed','#db2777','#059669','#d97706','#0891b2','#dc2626'];
   const bg = palette[nome.charCodeAt(0) % palette.length];
   return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: `linear-gradient(135deg, ${bg} 0%, ${bg}bb 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: size * 0.3, flexShrink: 0, border: '3px solid rgba(255,255,255,0.25)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+    <div style={{ width: size, height: size, borderRadius: '50%', background: `linear-gradient(135deg, ${bg} 0%, ${bg}bb 100%)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: size * 0.3, flexShrink: 0, border: '2px solid rgba(255,255,255,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
       {initials}
     </div>
+  );
+}
+
+/* ─── PersonPhoto ────────────────────────────────────────────────────────── */
+function getPhotoUrl(cpf: string, nome: string): string {
+  const digits = cpf.replace(/\D/g, '');
+  const photoId = parseInt(digits.slice(-2) || '0') % 100;
+  const gender = (nome.split(' ')[0]?.toLowerCase().endsWith('a') ||
+    ['ana','maria','paula','sandra','luciana','eliane','camila','andreia','francisca','adriana','tereza'].some(n => nome.toLowerCase().startsWith(n)))
+    ? 'women' : 'men';
+  return `https://randomuser.me/api/portraits/${gender}/${photoId}.jpg`;
+}
+
+function PersonPhoto({ cpf, nome, size = 56, onClick }: { cpf: string; nome: string; size?: number; onClick?: () => void }) {
+  const [err, setErr] = useState(false);
+  const url = getPhotoUrl(cpf, nome);
+  if (err) return <div onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}><Avatar nome={nome} size={size} /></div>;
+  return (
+    <img
+      src={url}
+      alt={nome}
+      title="Clique para ampliar"
+      onError={() => setErr(true)}
+      onClick={onClick}
+      style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '2px solid rgba(255,255,255,0.3)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)', cursor: onClick ? 'pointer' : 'default' }}
+    />
   );
 }
 
@@ -334,17 +361,56 @@ function IndicadorRow({ label, ok, value }: { label: string; ok: boolean; value?
   );
 }
 
+/* ─── LightboxPhoto ─────────────────────────────────────────────────────── */
+function LightboxPhoto({ cpf, nome }: { cpf: string; nome: string }) {
+  const [err, setErr] = useState(false);
+  const [ready, setReady] = useState(false);
+  const url = getPhotoUrl(cpf, nome);
+  const initials = nome.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+
+  return (
+    <div style={{ width: 280, height: 280, borderRadius: '50%', overflow: 'hidden', border: '4px solid #fff', boxShadow: '0 8px 40px rgba(0,0,0,0.5)', transform: ready ? 'scale(1)' : 'scale(0.8)', transition: 'transform 0.22s cubic-bezier(.34,1.56,.64,1)', flexShrink: 0 }}>
+      {err ? (
+        <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #00963F, #4CAF50)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 80, fontFamily: 'Open Sans, sans-serif' }}>{initials}</div>
+      ) : (
+        <img src={url} alt={nome} onError={() => setErr(true)} onLoad={() => setReady(true)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      )}
+    </div>
+  );
+}
+
 /* ─── VerModal ──────────────────────────────────────────────────────────── */
 function VerModal({ item, onClose }: { item: FP; onClose: () => void }) {
+  const [lightbox, setLightbox] = useState(false);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [lightbox]);
+
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1060 }} />
       <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 720, maxWidth: 'calc(100vw - 32px)', maxHeight: '90vh', background: '#fff', borderRadius: 12, zIndex: 1070, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.3)', fontFamily: 'Open Sans, sans-serif' }}>
 
+        {/* Lightbox */}
+        {lightbox && (
+          <div
+            onClick={() => setLightbox(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1090, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}
+          >
+            <LightboxPhoto cpf={item.cpf} nome={item.nome} />
+            <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 16, fontWeight: 600, fontFamily: 'Open Sans, sans-serif' }}>{item.nome}</div>
+            <button onClick={() => setLightbox(false)} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', padding: '6px 18px', fontSize: 12, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}>Fechar</button>
+          </div>
+        )}
+
         {/* Header */}
         <div style={{ background: '#12121f', padding: '18px 22px', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <Avatar nome={item.nome} size={56} />
+            <PersonPhoto cpf={item.cpf} nome={item.nome} size={56} onClick={() => setLightbox(true)} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ color: '#fff', fontWeight: 700, fontSize: 16, marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.nome}</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px 14px', color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
@@ -411,6 +477,7 @@ const EMPTY_F = { nome:'', uf:'', municipio:'', etapa:'', status:'', processo:''
 
 /* ─── Main page ─────────────────────────────────────────────────────────── */
 export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: NavigateFn }) {
+  const { isMobile, isTablet } = useBreakpoint();
   const [modal, setModal] = useState<FP | null>(null);
   const [f, setF] = useState({ ...EMPTY_F });
   const [a, setA] = useState({ ...EMPTY_F });
@@ -455,14 +522,14 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
   const td: React.CSSProperties = { padding: '10px 12px', fontSize: 12, color: '#374151', verticalAlign: 'top' };
 
   const etapaOpts = ETAPAS.map(e => ({ value: e, label: e }));
-  const statusOpts: Opt[] = [{ value:'Em andamento', label:'Em andamento' }, { value:'Deferido', label:'Deferido' }, { value:'Indeferido', label:'Indeferido' }];
+  const statusOpts: Opt[] = [{ value:'Pendente', label:'Pendente' }, { value:'Deferido', label:'Deferido' }, { value:'Indeferido', label:'Indeferido' }];
   const ufOpts = Object.keys(UF_MUNS).sort().map(u => ({ value: u, label: u }));
   const munOpts = ufMuns.map(m => ({ value: m, label: m }));
   const tipoOpts: Opt[] = [{ value:'Municipal', label:'Municipal' }, { value:'Estadual', label:'Estadual' }];
   const enviadoOpts: Opt[] = [{ value:'Sim', label:'Sim' }, { value:'Não', label:'Não' }];
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
+    <div style={{ padding: isMobile ? '16px' : '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20 }}>
@@ -480,7 +547,7 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
       </div>
 
       {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 14, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2,1fr)' : isTablet ? 'repeat(3,1fr)' : 'repeat(5,1fr)', gap: 14, marginBottom: 20 }}>
         <KPI label="Total de solicitações" value={kpi.total}        icon="bi-clipboard2-data-fill" borderColor="#2563eb" />
         <KPI label="Publicidade"           value={kpi.publicidade}  icon="bi-megaphone-fill"        borderColor="#6b7280" />
         <KPI label="Filiação"              value={kpi.filiacao}     icon="bi-person-plus-fill"      borderColor="#3b82f6" />
@@ -494,7 +561,7 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
           <i className="bi bi-funnel-fill" style={{ color: '#2563eb' }} /> Filtros
         </div>
         {/* Row 1 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.3fr 1.3fr 1fr', gap: 12, marginBottom: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr 1fr' : '2fr 1fr 1.3fr 1.3fr 1fr', gap: 12, marginBottom: 12 }}>
           <div>
             <label style={lb}>Nome / CPF</label>
             <input value={f.nome} onChange={e => setF(p => ({ ...p, nome: e.target.value }))} placeholder="Digite nome ou CPF…"
@@ -508,7 +575,7 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
           <div><label style={lb}>Status</label><CustomSelect value={f.status} onChange={set('status')} options={statusOpts} placeholder="Todos" /></div>
         </div>
         {/* Row 2 */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1.3fr 1fr auto auto', gap: 12, alignItems: 'flex-end' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : '2fr 1fr 1.3fr 1fr auto auto', gap: 12, alignItems: 'flex-end' }}>
           <div>
             <label style={lb}>Nº do Processo 1doc</label>
             <input value={f.processo} onChange={e => setF(p => ({ ...p, processo: e.target.value }))} placeholder="Ex: PROC-2024-000001"
@@ -533,6 +600,37 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
 
       {/* Table */}
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+        {isMobile ? (
+          /* ── Mobile cards ── */
+          <div style={{ padding: '12px' }}>
+            {pageData.length === 0 ? (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#9ca3af' }}>
+                <i className="bi bi-search" style={{ fontSize: 30, display: 'block', marginBottom: 8 }} />
+                Nenhum registro encontrado.
+              </div>
+            ) : (
+              <div className="mobile-card-list">
+                {pageData.map(r => (
+                  <div key={r.id} style={{ background: '#fff', border: '1px solid #dde3ee', borderRadius: 10, padding: '14px 16px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: 11, background: '#f1f5f9', borderRadius: 4, padding: '2px 6px', color: '#374151' }}>{r.protocolo}</span>
+                      <StatusBadge status={r.status} />
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: '#111827', marginBottom: 2 }}>{r.nome}</div>
+                    <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 2, fontFamily: 'monospace' }}>{r.cpf}</div>
+                    <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}><strong>{r.uf}</strong> · {r.municipio} · {r.dtAbertura}</div>
+                    <div style={{ marginBottom: 10 }}><StepTracker item={r} /></div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button onClick={() => setModal(r)} style={{ padding: '7px 16px', border: '1.5px solid #2563eb', borderRadius: 6, background: '#fff', color: '#2563eb', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', display: 'inline-flex', alignItems: 'center', gap: 5, minHeight: 36 }}>
+                        <i className="bi bi-eye-fill" /> Ver
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
         <div style={{ overflowX: 'auto' }}>
           <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12 }}>
             <thead>
@@ -573,6 +671,7 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
             </tbody>
           </table>
         </div>
+        )}
 
         {/* Footer */}
         <div style={{ padding: '12px 16px', borderTop: '1px solid #f0f4fb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>

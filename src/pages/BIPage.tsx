@@ -5,6 +5,7 @@ import BrazilMap from '../components/BrazilMap';
 import { BI_COBERTURA_UF, BI_ORGAOS_POR_ESTADO } from '../data/mockData';
 import KPICard from '../components/shared/KPICard';
 import CustomSelect from '../components/shared/CustomSelect';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 type Tab = 'partido' | 'filiados' | 'eleicao' | 'mandatarios';
 
@@ -98,6 +99,7 @@ const UF_TO_NAME: Record<string, string> = {
 
 // ── Tab 1: Gestão do Partido ──────────────────────────────────────────────────
 function TabPartido() {
+  const { isMobile, isTablet } = useBreakpoint();
   const [selectedUF, setSelectedUF] = useState<string | null>(null);
   const [ufFilter, setUfFilter]     = useState('');
 
@@ -153,7 +155,7 @@ function TabPartido() {
 
       {/* Map — full width */}
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '20px 22px', marginBottom: 20 }}>
-        <div style={{ display: 'flex', gap: 0 }}>
+        <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 0 }}>
           {/* Map column */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -170,7 +172,7 @@ function TabPartido() {
             </div>
             <BrazilMap
               data={mapData}
-              height={400}
+              height={isMobile ? 250 : 400}
               selectedUF={selectedUF ?? undefined}
               onStateClick={uf => { setSelectedUF(p => p === uf ? null : uf); setUfFilter(p => p === uf ? '' : uf); }}
             />
@@ -186,7 +188,7 @@ function TabPartido() {
 
           {/* State detail panel */}
           {stateDetail && selectedUF && (
-            <div style={{ width: 300, flexShrink: 0, marginLeft: 28, borderLeft: '1px solid #e5e7eb', paddingLeft: 28, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={isMobile ? { marginTop: 16, borderTop: '1px solid #e5e7eb', paddingTop: 16 } : { width: 300, flexShrink: 0, marginLeft: 28, borderLeft: '1px solid #e5e7eb', paddingLeft: 28, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 18 }}>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 16, color: '#111827', lineHeight: 1.2 }}>
@@ -226,7 +228,7 @@ function TabPartido() {
       </div>
 
       {/* Bar + Tipo de Órgão + Usuários */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)', gap: 20, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)', gap: 20, marginBottom: 20 }}>
         <ChartCard title="Top 5 por Órgãos" subtitle="Estados com maior número de órgãos">
           <Bar data={barChartData} options={baseOpts() as object} />
         </ChartCard>
@@ -253,11 +255,11 @@ function TabPartido() {
         </ChartCard>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
-        <ChartCard title="Distribuição por Cargo de Dirigente" subtitle="Top cargos em órgãos partidários" height={220}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 20, marginBottom: 20 }}>
+        <ChartCard title="Distribuição por Cargo de Dirigente" subtitle="Top cargos em órgãos partidários" height={isMobile ? 200 : 220}>
           <Bar data={cargosDir} options={horizOpts() as object} />
         </ChartCard>
-        <ChartCard title="Evolução de Filiados" subtitle="Histórico anual de filiação e desfiliação" height={220}>
+        <ChartCard title="Evolução de Filiados" subtitle="Histórico anual de filiação e desfiliação" height={isMobile ? 200 : 220}>
           <Line data={lineData} options={{ ...(baseOpts(true) as object) } as object} />
         </ChartCard>
       </div>
@@ -312,6 +314,7 @@ function TabPartido() {
 
 // ── Tab 2: Filiados ───────────────────────────────────────────────────────────
 function TabFiliados() {
+  const { isMobile, isTablet } = useBreakpoint();
   const barByUF = {
     labels: BI_COBERTURA_UF.slice(0, 10).map(d => d.uf),
     datasets: [{ label: 'Filiados', data: BI_COBERTURA_UF.slice(0, 10).map(d => d.filiados), backgroundColor: MDB_GREEN, hoverBackgroundColor: '#007A32', borderRadius: 4 }],
@@ -397,7 +400,7 @@ function TabFiliados() {
       </div>
 
       {/* Row 1: bar UF + status + canal + gênero donuts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px 220px 220px', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr 1fr' : isTablet ? '1fr 1fr' : '1fr 220px 220px 220px', gap: 16, marginBottom: 16 }}>
         <ChartCard title="Top 10 UF por Filiados" height={260}>
           <Bar data={barByUF} options={baseOpts() as object} />
         </ChartCard>
@@ -413,17 +416,17 @@ function TabFiliados() {
       </div>
 
       {/* Row 2: pirâmide etária + evolução */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-        <ChartCard title="Pirâmide Etária" subtitle="Filiados por faixa etária e sexo" height={260}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 16 }}>
+        <ChartCard title="Pirâmide Etária" subtitle="Filiados por faixa etária e sexo" height={isMobile ? 200 : 260}>
           <Bar data={piramideData} options={piramideOpts as object} />
         </ChartCard>
-        <ChartCard title="Evolução Histórica de Filiações" subtitle="Base acumulada + novas filiações por ano" height={260}>
+        <ChartCard title="Evolução Histórica de Filiações" subtitle="Base acumulada + novas filiações por ano" height={isMobile ? 200 : 260}>
           <Line data={evolucaoData} options={evolucaoOpts as object} />
         </ChartCard>
       </div>
 
       {/* Row 3: funil + dispositivo */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 260px', gap: 16, marginBottom: 16 }}>
         <ChartCard title="Funil de Aprovação" subtitle="Documentação → Análise → Regular" height={200}>
           <Bar data={funilData} options={horizOpts() as object} />
         </ChartCard>
@@ -435,6 +438,7 @@ function TabFiliados() {
       {/* Pré-candidatos table */}
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '20px 22px' }}>
         <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 16 }}>Pré-candidatos por Cargo — 2026</div>
+        <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>{['Cargo', 'Ano', 'Pré-candidatos', 'Estados', 'Alcance (%)'].map(h => <th key={h} style={{ padding: '8px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#6b7280', borderBottom: '2px solid #e5e7eb', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>)}</tr>
@@ -458,6 +462,7 @@ function TabFiliados() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
@@ -468,6 +473,7 @@ const UF_OPTS = ['AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT
 const PARTIDO_OPTS = ['PSDB','PT','PP','PL','PSD','MDB','Republicanos','Podemos','Solidariedade','Avante'].map(v => ({ value: v, label: v }));
 
 function TabEleicao() {
+  const { isMobile, isTablet } = useBreakpoint();
   const [uf, setUf]         = useState('');
   const [municipio, setMun] = useState('');
   const [partido, setPartido] = useState('');
@@ -498,7 +504,7 @@ function TabEleicao() {
       {/* Filtros */}
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '16px 20px', marginBottom: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Filtros do Relatório</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr', gap: 14 }}>
           <div><label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 5 }}>UF</label><CustomSelect value={uf} onChange={setUf} options={UF_OPTS} placeholder="Todas as UFs" /></div>
           <div><label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 5 }}>Município</label><CustomSelect value={municipio} onChange={setMun} options={[]} placeholder={uf ? 'Selecione' : 'Selecione UF primeiro'} disabled={!uf} /></div>
           <div><label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 5 }}>Partido</label><CustomSelect value={partido} onChange={setPartido} options={PARTIDO_OPTS} placeholder="Todos" /></div>
@@ -517,7 +523,7 @@ function TabEleicao() {
       </ChartCard>
 
       {/* 3 gráficos lado a lado */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginTop: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : '1fr 1fr 1fr', gap: 16, marginTop: 16 }}>
         <ChartCard title="Prefeito(a) por Partido" subtitle="Top 10 — 2024" height={260}>
           <Bar data={mkHorizCargo('Prefeitos', [394, 310, 285, 268, 242, 198, 186, 164, 142, 128])} options={horizOpts() as object} />
         </ChartCard>
@@ -541,6 +547,7 @@ const GENERO_OPTS   = ['Masculino', 'Feminino'].map(v => ({ value: v, label: v }
 const ELEITO_OPTS   = ['Sim', 'Não'].map(v => ({ value: v, label: v }));
 
 function TabMandatarios() {
+  const { isMobile, isTablet } = useBreakpoint();
   const [fAno, setFAno]           = useState('');
   const [fTurno, setFTurno]       = useState('');
   const [fCargo, setFCargo]       = useState('');
@@ -630,7 +637,7 @@ function TabMandatarios() {
       {/* Filtros */}
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '16px 20px', marginBottom: 20 }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Filtros do Relatório</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(3, 1fr)', gap: 12 }}>
           <div><label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 5 }}>Ano</label><CustomSelect value={fAno} onChange={setFAno} options={ANO_OPTS} placeholder="Todos" /></div>
           <div><label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 5 }}>Turno</label><CustomSelect value={fTurno} onChange={setFTurno} options={TURNO_OPTS} placeholder="Todos" /></div>
           <div><label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#374151', marginBottom: 5 }}>Cargo</label><CustomSelect value={fCargo} onChange={setFCargo} options={CARGO_OPTS} placeholder="Todos" /></div>
@@ -651,7 +658,7 @@ function TabMandatarios() {
       </div>
 
       {/* Row 1: UF + gênero + candidaturas */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px 1fr', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : '1fr 220px 1fr', gap: 16, marginBottom: 16 }}>
         <ChartCard title="Top 10 UF por Mandatários" height={260}>
           <Bar data={ufData} options={baseOpts() as object} />
         </ChartCard>
@@ -664,7 +671,7 @@ function TabMandatarios() {
       </div>
 
       {/* Row 2: histórico + situação */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 260px', gap: 16, marginBottom: 16 }}>
         <ChartCard title="Histórico Eleitoral" subtitle="Candidaturas + votos (2018–2024)" height={240}>
           <Line data={historico} options={historOpts as object} />
         </ChartCard>
@@ -674,7 +681,7 @@ function TabMandatarios() {
       </div>
 
       {/* Row 3: top 15 candidatos + municípios */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 16, marginBottom: 16 }}>
         <ChartCard title="Top 15 Candidatos por Votos" subtitle="Candidatos com maior votação" height={320}>
           <Bar data={top15candData} options={horizOpts() as object} />
         </ChartCard>
@@ -725,15 +732,16 @@ function MdbLogoBi({ size = 34 }: { size?: number }) {
 
 // ── Main BIPage ───────────────────────────────────────────────────────────────
 export default function BIPage({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) {
+  const { isMobile } = useBreakpoint();
   const [activeTab, setActiveTab] = useState<Tab>('partido');
   const tabs: Tab[] = ['partido', 'filiados', 'eleicao', 'mandatarios'];
 
   return (
-    <div style={{ padding: '20px 28px 0' }}>
+    <div style={{ padding: isMobile ? '16px 16px 0' : '20px 28px 0' }}>
       {/* Tabs */}
-      <div style={{ borderBottom: '1px solid #e5e7eb', display: 'flex', gap: 0, marginBottom: 24 }}>
+      <div style={{ borderBottom: '1px solid #e5e7eb', display: 'flex', gap: 0, marginBottom: 24, overflowX: 'auto' }}>
         {tabs.map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: '10px 20px', border: 'none', background: 'none', fontSize: 13, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', fontWeight: activeTab === tab ? 700 : 400, color: activeTab === tab ? TAB_GREEN : '#6b7280', borderBottom: `3px solid ${activeTab === tab ? TAB_GREEN : 'transparent'}`, whiteSpace: 'nowrap', transition: 'color 0.15s', marginBottom: -1 }}>
+          <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: isMobile ? '10px 14px' : '10px 20px', border: 'none', background: 'none', fontSize: isMobile ? 12 : 13, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', fontWeight: activeTab === tab ? 700 : 400, color: activeTab === tab ? TAB_GREEN : '#6b7280', borderBottom: `3px solid ${activeTab === tab ? TAB_GREEN : 'transparent'}`, whiteSpace: 'nowrap', transition: 'color 0.15s', marginBottom: -1, flexShrink: 0 }}>
             {TAB_LABELS[tab]}
           </button>
         ))}

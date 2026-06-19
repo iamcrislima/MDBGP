@@ -4,6 +4,7 @@ import DataTable, { Column } from '../components/shared/DataTable';
 import CustomSelect from '../components/shared/CustomSelect';
 import PessoaDetalheModal from '../components/shared/PessoaDetalheModal';
 import { MOCK_FILIADOS, MOCK_MANDATARIOS } from '../data/mockData';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const ALL_DATA: Filiado[] = Array.from({ length: 1444 }, (_, i) => ({
   ...MOCK_FILIADOS[i % MOCK_FILIADOS.length],
@@ -83,8 +84,9 @@ const lb: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: '#6b7280
 const inp: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 10px', fontSize: 13, background: '#fff', width: '100%', fontFamily: 'Open Sans, sans-serif', color: '#374151', height: 38, boxSizing: 'border-box' };
 
 export default function FiliacaoPage({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) {
+  const { isMobile, isTablet } = useBreakpoint();
   const [filters, setFilters]      = useState({ ...EMPTY_F });
-  const [filterOpen, setFilterOpen] = useState(true);
+  const [filterOpen, setFilterOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
   const [page, setPage]            = useState(1);
   const [pageSize, setPageSize]    = useState(10);
   const [selected, setSelected]    = useState<Filiado | null>(null);
@@ -132,10 +134,10 @@ export default function FiliacaoPage({ onNavigate: _onNavigate }: { onNavigate: 
   ];
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
+    <div style={{ padding: isMobile ? '16px' : '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>Consultar Filiados</h1>
+          <h1 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, color: '#111827', margin: 0 }}>Consultar Filiados</h1>
           <div style={{ color: '#6b7280', fontSize: 13, marginTop: 2 }}>
             <span style={{ color: '#00963F', fontWeight: 600 }}>{filtered.length.toLocaleString('pt-BR')}</span> registros encontrados
           </div>
@@ -149,7 +151,7 @@ export default function FiliacaoPage({ onNavigate: _onNavigate }: { onNavigate: 
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '20px 22px', marginBottom: 20 }}>
 
           {/* Linha 1: Nome | Nome na urna | CPF | Mandatário atual? | Situação */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
             <div>
               <label style={lb}>Nome do filiado</label>
               <input style={inp} placeholder="Nome completo" value={filters.nome}
@@ -182,7 +184,7 @@ export default function FiliacaoPage({ onNavigate: _onNavigate }: { onNavigate: 
           </div>
 
           {/* Linha 2: Cargo | Sexo | Raça | UF | Município */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
             <div>
               <label style={lb}>Cargo no partido</label>
               <CustomSelect value={filters.cargo} onChange={set('cargo')} options={CARGO_OPTS} placeholder="Todos" />
@@ -206,7 +208,7 @@ export default function FiliacaoPage({ onNavigate: _onNavigate }: { onNavigate: 
           </div>
 
           {/* Linha 3: Idade range | Pop. município range */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
             <div>
               <label style={lb}>Idade</label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -265,6 +267,25 @@ export default function FiliacaoPage({ onNavigate: _onNavigate }: { onNavigate: 
           onPageChange={setPage}
           onPageSizeChange={s => { setPageSize(s); setPage(1); }}
           emptyMessage="Nenhum filiado encontrado."
+          mobileCard={(row) => {
+            const r = row as unknown as Filiado;
+            return (
+              <div style={{ background: '#fff', border: '1px solid #dde3ee', borderRadius: 10, padding: '14px 16px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: '#111827', flex: 1, marginRight: 8 }}>{r.nomeFiliado}</div>
+                  <SituacaoBadge value={r.situacao} />
+                </div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 2, fontFamily: 'monospace' }}>{r.cpf}</div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}>{r.uf ?? '—'} · {r.municipio ?? '—'}</div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>Filiação: {r.dataFiliacao ?? '—'}</div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button onClick={() => setSelected(r)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#00963F', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: 'Open Sans, sans-serif', minHeight: 36 }}>
+                    <i className="bi bi-eye" style={{ fontSize: 11 }} /> Ver
+                  </button>
+                </div>
+              </div>
+            );
+          }}
         />
       </div>
 

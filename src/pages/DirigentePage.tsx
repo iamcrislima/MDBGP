@@ -3,6 +3,7 @@ import type { NavigateFn, Dirigente } from '../types';
 import DataTable, { Column } from '../components/shared/DataTable';
 import CustomSelect from '../components/shared/CustomSelect';
 import { MOCK_DIRIGENTES } from '../data/mockData';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const ALL_DATA: Dirigente[] = Array.from({ length: 11232 }, (_, i) => ({ ...MOCK_DIRIGENTES[i % MOCK_DIRIGENTES.length], id: i + 1 }));
 
@@ -154,8 +155,9 @@ const lb: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: '#6b7280
 const inp: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 10px', fontSize: 13, background: '#fff', width: '100%', fontFamily: 'Open Sans, sans-serif', color: '#374151', height: 38, boxSizing: 'border-box' };
 
 export default function DirigentePage({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) {
+  const { isMobile, isTablet } = useBreakpoint();
   const [filters, setFilters]      = useState({ ...EMPTY_F });
-  const [filterOpen, setFilterOpen] = useState(true);
+  const [filterOpen, setFilterOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
   const [page, setPage]            = useState(1);
   const [pageSize, setPageSize]    = useState(10);
   const [selected, setSelected]    = useState<Dirigente | null>(null);
@@ -224,10 +226,10 @@ export default function DirigentePage({ onNavigate: _onNavigate }: { onNavigate:
   ];
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
+    <div style={{ padding: isMobile ? '16px' : '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>Consultar Dirigentes</h1>
+          <h1 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, color: '#111827', margin: 0 }}>Consultar Dirigentes</h1>
           <div style={{ color: '#6b7280', fontSize: 13, marginTop: 2 }}><span style={{ color: '#2563eb', fontWeight: 600 }}>{filtered.length.toLocaleString('pt-BR')}</span> registros encontrados</div>
         </div>
         <button onClick={() => setFilterOpen(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', border: '1px solid #d1d5db', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 13, color: '#374151', fontFamily: 'Open Sans, sans-serif' }}>
@@ -239,7 +241,7 @@ export default function DirigentePage({ onNavigate: _onNavigate }: { onNavigate:
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '20px 22px', marginBottom: 20 }}>
 
           {/* Linha 1: Nome | CPF */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14, marginBottom: 14 }}>
             <div>
               <label style={lb}>Nome do dirigente</label>
               <input style={inp} placeholder="Nome completo" value={filters.nome}
@@ -257,7 +259,7 @@ export default function DirigentePage({ onNavigate: _onNavigate }: { onNavigate:
           </div>
 
           {/* Linha 2: UF órgão | Município | Tipo órgão | Abrangência */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 14, marginBottom: 14 }}>
             <div>
               <label style={lb}>UF do órgão</label>
               <CustomSelect value={filters.uf} onChange={v => { setFilters(p => ({ ...p, uf: v, municipio: '' })); setPage(1); }} options={UF_OPTS} placeholder="Todas" />
@@ -277,7 +279,7 @@ export default function DirigentePage({ onNavigate: _onNavigate }: { onNavigate:
           </div>
 
           {/* Linha 3: Cargo */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: 14, marginBottom: 18 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 3fr', gap: 14, marginBottom: 18 }}>
             <div>
               <label style={lb}>Cargo</label>
               <input style={inp} placeholder="Cargo do dirigente" value={filters.cargo}
@@ -302,7 +304,35 @@ export default function DirigentePage({ onNavigate: _onNavigate }: { onNavigate:
       )}
 
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '20px 22px' }}>
-        <DataTable columns={cols as unknown as Column<Record<string, unknown>>[]} data={pageData as unknown as Record<string, unknown>[]} totalRecords={filtered.length} pageSize={pageSize} currentPage={page} onPageChange={setPage} onPageSizeChange={s => { setPageSize(s); setPage(1); }} />
+        <DataTable
+          columns={cols as unknown as Column<Record<string, unknown>>[]}
+          data={pageData as unknown as Record<string, unknown>[]}
+          totalRecords={filtered.length}
+          pageSize={pageSize}
+          currentPage={page}
+          onPageChange={setPage}
+          onPageSizeChange={s => { setPageSize(s); setPage(1); }}
+          mobileCard={(row) => {
+            const r = row as unknown as Dirigente;
+            const vig = calcVigencia(r.dataFimExercicio);
+            return (
+              <div style={{ background: '#fff', border: '1px solid #dde3ee', borderRadius: 10, padding: '14px 16px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: '#111827', flex: 1, marginRight: 8 }}>{r.nomeDirigente}</div>
+                  <VigenciaBadge value={vig} />
+                </div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 2 }}>{r.cargoDirigente}</div>
+                <div style={{ fontSize: 12, color: '#2563eb', fontWeight: 600, marginBottom: 2 }}>{r.ufOrgao} · {r.municipioOrgao}</div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>{r.dataInicioExercicio} – {r.dataFimExercicio}</div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button onClick={() => setSelected(r)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#2563eb', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: 'Open Sans, sans-serif', minHeight: 36 }}>
+                    <i className="bi bi-eye" style={{ fontSize: 11 }} /> Ver
+                  </button>
+                </div>
+              </div>
+            );
+          }}
+        />
       </div>
 
       {selected && <DirigenteModal item={selected} onClose={() => setSelected(null)} />}

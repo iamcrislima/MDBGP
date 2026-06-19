@@ -4,6 +4,7 @@ import DataTable, { Column } from '../components/shared/DataTable';
 import CustomSelect from '../components/shared/CustomSelect';
 import PessoaDetalheModal from '../components/shared/PessoaDetalheModal';
 import { MOCK_MANDATARIOS } from '../data/mockData';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const PAGE_SIZE_DEFAULT = 10;
 
@@ -76,8 +77,9 @@ const lb: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: '#6b7280
 const inp: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 10px', fontSize: 13, background: '#fff', width: '100%', fontFamily: 'Open Sans, sans-serif', color: '#374151', height: 38, boxSizing: 'border-box' };
 
 export default function MandatarioPage({ onNavigate: _onNavigate }: { onNavigate: NavigateFn; selectedId?: number }) {
+  const { isMobile, isTablet } = useBreakpoint();
   const [filters, setFilters] = useState({ ...EMPTY_F });
-  const [filterOpen, setFilterOpen] = useState(true);
+  const [filterOpen, setFilterOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_DEFAULT);
   const [selected, setSelected] = useState<Mandatario | null>(null);
@@ -125,10 +127,10 @@ export default function MandatarioPage({ onNavigate: _onNavigate }: { onNavigate
   ];
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
+    <div style={{ padding: isMobile ? '16px' : '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>Consultar Mandatários</h1>
+          <h1 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, color: '#111827', margin: 0 }}>Consultar Mandatários</h1>
           <div style={{ color: '#6b7280', fontSize: 13, marginTop: 2 }}>
             <span style={{ color: '#00963F', fontWeight: 600 }}>{filtered.length.toLocaleString('pt-BR')}</span> registros encontrados
           </div>
@@ -142,7 +144,7 @@ export default function MandatarioPage({ onNavigate: _onNavigate }: { onNavigate
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '20px 22px', marginBottom: 20 }}>
 
           {/* Linha 1: Nome | Nome na urna */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14, marginBottom: 14 }}>
             <div>
               <label style={lb}>Nome</label>
               <input style={inp} placeholder="Nome do mandatário" value={filters.nome}
@@ -160,7 +162,7 @@ export default function MandatarioPage({ onNavigate: _onNavigate }: { onNavigate
           </div>
 
           {/* Linha 2: Cargo | Ano | Eleito | UF | Município */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr 1fr' : 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
             <div><label style={lb}>Cargo</label><CustomSelect value={filters.cargo} onChange={set('cargo')} options={CARGO_OPTS} placeholder="Todos" /></div>
             <div><label style={lb}>Ano da eleição</label><CustomSelect value={filters.anoEleicao} onChange={set('anoEleicao')} options={ANO_OPTS} placeholder="Todos" /></div>
             <div><label style={lb}>Eleito?</label><CustomSelect value={filters.eleito} onChange={set('eleito')} options={ELEITO_OPTS} placeholder="Todos" /></div>
@@ -169,7 +171,7 @@ export default function MandatarioPage({ onNavigate: _onNavigate }: { onNavigate
           </div>
 
           {/* Linha 3: Sexo | Raça | Idade (range) | Pop. município (range) */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
             <div><label style={lb}>Sexo</label><CustomSelect value={filters.sexo} onChange={set('sexo')} options={SEXO_OPTS} placeholder="Todos" /></div>
             <div><label style={lb}>Raça / Cor</label><CustomSelect value={filters.raca} onChange={set('raca')} options={RACA_OPTS} placeholder="Todos" /></div>
             <div>
@@ -225,6 +227,29 @@ export default function MandatarioPage({ onNavigate: _onNavigate }: { onNavigate
           currentPage={page}
           onPageChange={setPage}
           onPageSizeChange={s => { setPageSize(s); setPage(1); }}
+          mobileCard={(row) => {
+            const r = row as unknown as Mandatario;
+            return (
+              <div style={{ background: '#fff', border: '1px solid #dde3ee', borderRadius: 10, padding: '14px 16px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: '#111827', flex: 1, marginRight: 8 }}>{r.nome}</div>
+                  <EleitoBadge value={r.eleito} />
+                </div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 2 }}>{r.cargo} · {r.anoEleicao}</div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}>{r.uf} · {r.municipio}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' as const }}>
+                  <span style={{ fontSize: 12, color: '#6b7280' }}>Situação:</span>
+                  <SituacaoBadge value={r.situacao} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: '#374151' }}>Votos: <strong>{r.totalVotos.toLocaleString('pt-BR')}</strong></span>
+                  <button onClick={() => setSelected(r)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#00963F', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: 'Open Sans, sans-serif', minHeight: 36 }}>
+                    <i className="bi bi-eye" style={{ fontSize: 11 }} /> Ver
+                  </button>
+                </div>
+              </div>
+            );
+          }}
         />
       </div>
 

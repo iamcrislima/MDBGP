@@ -3,7 +3,7 @@
 body {
   margin: 0;
   font-family: 'Open Sans', sans-serif;
-  background: #2b2b3b;
+  background: #f4f6f9;
 }
 
 /* Thin scrollbar for sidebar */
@@ -16,3 +16,85 @@ aside {
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
+
+/* ── Dark mode ── */
+/* Filter on html = viewport-level inversion; avoids breaking position:fixed children */
+html[data-dark="true"] {
+  filter: invert(1) hue-rotate(180deg);
+  background: #f4f6f9;
+}
+
+/* Re-invert assets so they show in natural colors */
+html[data-dark="true"] img,
+html[data-dark="true"] svg image,
+html[data-dark="true"] canvas,
+html[data-dark="true"] video {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Logo MDB inline SVG: cancel global inversion so gradients keep original colors */
+html[data-dark="true"] .logo-mdb {
+  filter: invert(1) hue-rotate(180deg);
+}
+/* The dark text (#231f20) renders as white after the double inversion chain */
+html[data-dark="true"] .logo-mdb .cls-4 {
+  fill: #ffffff !important;
+}
+
+/* ── Prevent iOS auto-zoom on inputs ── */
+@media (max-width: 767px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ── Touch devices: suppress hover flicker ── */
+@media (hover: none) {
+  button:hover { background: initial !important; }
+}
+
+/* ── Bottom sheet slide-up animation ── */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.modal-bottom-sheet {
+  animation: slideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ── Tablet sidebar hover-expand ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .sidebar-tablet-hover {
+    transition: width 0.2s ease !important;
+    overflow: hidden;
+  }
+  .sidebar-tablet-hover:hover {
+    width: 240px !important;
+  }
+  .sidebar-tablet-hover .sidebar-label,
+  .sidebar-tablet-hover .sidebar-chevron,
+  .sidebar-tablet-hover .sidebar-menu-header {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.15s ease 0.05s;
+  }
+  .sidebar-tablet-hover:hover .sidebar-label,
+  .sidebar-tablet-hover:hover .sidebar-chevron,
+  .sidebar-tablet-hover:hover .sidebar-menu-header {
+    display: flex !important;
+    opacity: 1;
+  }
+}
+
+/* ── Mobile card list ── */
+.mobile-card-list { display: flex; flex-direction: column; gap: 10px; }
+
+/* ── Horizontal scroll tabs on mobile ── */
+.tabs-scroll {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tabs-scroll::-webkit-scrollbar { display: none; }
+

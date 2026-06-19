@@ -3,6 +3,7 @@ import type { NavigateFn, Orgao, Dirigente } from '../types';
 import DataTable, { Column } from '../components/shared/DataTable';
 import CustomSelect from '../components/shared/CustomSelect';
 import { MOCK_ORGAOS, MOCK_DIRIGENTES } from '../data/mockData';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const ALL_DATA: Orgao[] = Array.from({ length: 311 }, (_, i) => ({ ...MOCK_ORGAOS[i % MOCK_ORGAOS.length], id: i + 1 }));
 const ALL_DIRIGENTES: Dirigente[] = Array.from({ length: 11232 }, (_, i) => ({ ...MOCK_DIRIGENTES[i % MOCK_DIRIGENTES.length], id: i + 1 }));
@@ -208,8 +209,9 @@ const lb: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: '#6b7280
 const inp: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 10px', fontSize: 13, background: '#fff', width: '100%', fontFamily: 'Open Sans, sans-serif', color: '#374151', height: 38, boxSizing: 'border-box' };
 
 export default function OrgaoPage({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) {
+  const { isMobile, isTablet } = useBreakpoint();
   const [filters, setFilters]      = useState({ ...EMPTY_F });
-  const [filterOpen, setFilterOpen] = useState(true);
+  const [filterOpen, setFilterOpen] = useState(() => typeof window !== 'undefined' ? window.innerWidth >= 768 : true);
   const [page, setPage]            = useState(1);
   const [pageSize, setPageSize]    = useState(10);
   const [selected, setSelected]    = useState<Orgao | null>(null);
@@ -246,10 +248,10 @@ export default function OrgaoPage({ onNavigate: _onNavigate }: { onNavigate: Nav
   ];
 
   return (
-    <div style={{ padding: '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
+    <div style={{ padding: isMobile ? '16px' : '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>Consultar Órgãos Partidários</h1>
+          <h1 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, color: '#111827', margin: 0 }}>Consultar Órgãos Partidários</h1>
           <div style={{ color: '#6b7280', fontSize: 13, marginTop: 2 }}><span style={{ color: '#2563eb', fontWeight: 600 }}>{filtered.length.toLocaleString('pt-BR')}</span> registros encontrados</div>
         </div>
         <button onClick={() => setFilterOpen(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', border: '1px solid #d1d5db', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 13, color: '#374151', fontFamily: 'Open Sans, sans-serif' }}>
@@ -260,7 +262,7 @@ export default function OrgaoPage({ onNavigate: _onNavigate }: { onNavigate: Nav
       {filterOpen && (
         <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '20px 22px', marginBottom: 20 }}>
           {/* Linha 1: Tipo | UF | Município | CNPJ | Situação vigência | Abrangência */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 14, marginBottom: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr 1fr' : 'repeat(6, 1fr)', gap: 14, marginBottom: 14 }}>
             <div><label style={lb}>Tipo de órgão</label><CustomSelect value={filters.tipo} onChange={set('tipo')} options={TIPO_OPTS} placeholder="Todos" /></div>
             <div><label style={lb}>UF</label><CustomSelect value={filters.uf} onChange={v => { setFilters(p => ({ ...p, uf: v, municipio: '' })); setPage(1); }} options={UF_OPTS} placeholder="Todas" /></div>
             <div><label style={lb}>Município</label><CustomSelect value={filters.municipio} onChange={set('municipio')} options={MUN_BY_UF[filters.uf] ?? []} placeholder="Todos" disabled={!filters.uf} /></div>
@@ -280,7 +282,34 @@ export default function OrgaoPage({ onNavigate: _onNavigate }: { onNavigate: Nav
       )}
 
       <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '20px 22px' }}>
-        <DataTable columns={cols as unknown as Column<Record<string, unknown>>[]} data={pageData as unknown as Record<string, unknown>[]} totalRecords={filtered.length} pageSize={pageSize} currentPage={page} onPageChange={setPage} onPageSizeChange={s => { setPageSize(s); setPage(1); }} />
+        <DataTable
+          columns={cols as unknown as Column<Record<string, unknown>>[]}
+          data={pageData as unknown as Record<string, unknown>[]}
+          totalRecords={filtered.length}
+          pageSize={pageSize}
+          currentPage={page}
+          onPageChange={setPage}
+          onPageSizeChange={s => { setPageSize(s); setPage(1); }}
+          mobileCard={(row) => {
+            const r = row as unknown as Orgao;
+            return (
+              <div style={{ background: '#fff', border: '1px solid #dde3ee', borderRadius: 10, padding: '14px 16px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                  <TipoOrgaoBadge value={r.tipoOrgao} />
+                  <VigenciaBadge value={r.situacaoVigencia} />
+                </div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: '#111827', marginBottom: 4 }}>{orgaoNome(r)}</div>
+                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 2 }}>{r.abrangencia}</div>
+                <div style={{ fontSize: 12, color: '#6b7280', fontFamily: 'monospace', marginBottom: 8 }}>{r.cnpj}</div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button onClick={() => setSelected(r)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#2563eb', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: 'Open Sans, sans-serif', minHeight: 36 }}>
+                    <i className="bi bi-eye" style={{ fontSize: 11 }} /> Ver
+                  </button>
+                </div>
+              </div>
+            );
+          }}
+        />
       </div>
 
       {selected && <OrgaoModal item={selected} onClose={() => setSelected(null)} />}

@@ -8,7 +8,8 @@ export type Page =
   | 'log-acesso'
   | 'perfil'
   | 'usuario'
-  | 'gerenciar-filiados';
+  | 'gerenciar-filiados'
+  | 'visao-geral-filiacao';
 
 export type NavigateFn = (page: Page, id?: number) => void;
 

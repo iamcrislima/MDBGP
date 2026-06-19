@@ -62,6 +62,12 @@ function UsuarioModal({
   });
   const [errors, setErrors] = useState<Partial<Record<keyof UsuarioForm, string>>>({});
   const [saving, setSaving] = useState(false);
+  const [senhaOpen, setSenhaOpen]     = useState(false);
+  const [novaSenha, setNovaSenha]     = useState('');
+  const [confirmSenha, setConfirmSenha] = useState('');
+  const [showNova, setShowNova]       = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [senhaError, setSenhaError]   = useState('');
 
   const validate = () => {
     const e: Partial<Record<keyof UsuarioForm, string>> = {};
@@ -73,6 +79,11 @@ function UsuarioModal({
   const handleSave = () => {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
+    if (senhaOpen && novaSenha) {
+      if (novaSenha.length < 8) { setSenhaError('Mínimo 8 caracteres'); return; }
+      if (novaSenha !== confirmSenha) { setSenhaError('As senhas não coincidem'); return; }
+    }
+    setSenhaError('');
     setSaving(true);
     setTimeout(() => {
       onSave({ ...usuario, ...form, uf: form.uf || undefined, municipio: form.municipio || undefined });
@@ -167,6 +178,63 @@ function UsuarioModal({
               <div>
                 <label style={FIELD_LABEL}>Situação</label>
                 <CustomSelect value={form.situacao} onChange={v => setForm(p => ({ ...p, situacao: v as 'Ativo' | 'Inativo' }))} options={SITUACAO_OPTS} placeholder="Selecione" />
+              </div>
+
+              {/* ── Alterar senha ─────────────────────────────────────────── */}
+              <div style={{ gridColumn: '1 / -1', marginTop: 4 }}>
+                <button
+                  type="button"
+                  onClick={() => { setSenhaOpen(p => !p); setSenhaError(''); setNovaSenha(''); setConfirmSenha(''); }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 7, width: '100%', padding: '10px 14px', background: senhaOpen ? '#f0f4fb' : '#f8fafc', border: `1px solid ${senhaOpen ? '#dce6f5' : '#e5e7eb'}`, borderRadius: 8, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', color: '#374151', fontSize: 13, fontWeight: 600, textAlign: 'left' }}
+                >
+                  <i className="bi bi-key" style={{ color: '#2563eb', fontSize: 14 }} />
+                  Alterar senha
+                  <i className={`bi bi-chevron-${senhaOpen ? 'up' : 'down'}`} style={{ marginLeft: 'auto', fontSize: 11, color: '#9ca3af' }} />
+                </button>
+
+                {senhaOpen && (
+                  <div style={{ padding: '16px 14px 4px', border: '1px solid #dce6f5', borderTop: 'none', borderRadius: '0 0 8px 8px', background: '#fff' }}>
+                    <div style={{ color: '#6b7280', fontSize: 12, marginBottom: 14 }}>Deixe em branco para manter a senha atual.</div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 20px' }}>
+                      <div>
+                        <label style={FIELD_LABEL}>Nova senha</label>
+                        <div style={{ position: 'relative' }}>
+                          <input
+                            type={showNova ? 'text' : 'password'}
+                            value={novaSenha}
+                            onChange={e => { setNovaSenha(e.target.value); setSenhaError(''); }}
+                            placeholder="Mín. 8 caracteres"
+                            style={{ ...inp, paddingRight: 40, borderColor: senhaError ? '#dc2626' : '#d1d5db', fontSize: 16 }}
+                            onFocus={e => (e.target.style.borderColor = '#2563eb')}
+                            onBlur={e => (e.target.style.borderColor = senhaError ? '#dc2626' : '#d1d5db')}
+                          />
+                          <button type="button" onClick={() => setShowNova(!showNova)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 15, padding: 0, lineHeight: 1 }}>
+                            <i className={`bi bi-eye${showNova ? '-slash' : ''}`} />
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label style={FIELD_LABEL}>Confirmar nova senha</label>
+                        <div style={{ position: 'relative' }}>
+                          <input
+                            type={showConfirm ? 'text' : 'password'}
+                            value={confirmSenha}
+                            onChange={e => { setConfirmSenha(e.target.value); setSenhaError(''); }}
+                            placeholder="Repita a nova senha"
+                            style={{ ...inp, paddingRight: 40, borderColor: senhaError ? '#dc2626' : '#d1d5db', fontSize: 16 }}
+                            onFocus={e => (e.target.style.borderColor = '#2563eb')}
+                            onBlur={e => (e.target.style.borderColor = senhaError ? '#dc2626' : '#d1d5db')}
+                          />
+                          <button type="button" onClick={() => setShowConfirm(!showConfirm)} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 15, padding: 0, lineHeight: 1 }}>
+                            <i className={`bi bi-eye${showConfirm ? '-slash' : ''}`} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    {senhaError && <div style={{ color: '#dc2626', fontSize: 12, marginTop: 8 }}>{senhaError}</div>}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -292,14 +360,14 @@ export default function UsuarioListPage({ onNavigate }: { onNavigate: NavigateFn
     { key: 'situacao', label: 'Situação', render: r => <SituacaoBadge s={r.situacao} /> },
     { key: 'ultimoAcesso', label: 'Último acesso', width: 180 },
     {
-      key: 'acoes', label: 'Ações', sortable: false, width: 130,
+      key: 'acoes', label: 'Ações', sortable: false, width: 90,
       render: r => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <button onClick={() => setModal({ usuario: r, isCreating: false })} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#374151', fontSize: 12, fontWeight: 500, fontFamily: 'Open Sans, sans-serif' }}>
-            <i className="bi bi-pencil" style={{ fontSize: 11 }} /> Ver / Editar
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'nowrap' }}>
+          <button onClick={() => setModal({ usuario: r, isCreating: false })} style={{ display: 'flex', alignItems: 'center', gap: 5, height: 32, padding: '0 10px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer', color: '#374151', fontSize: 12, fontWeight: 500, fontFamily: 'Open Sans, sans-serif', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <i className="bi bi-eye" style={{ fontSize: 12 }} /> Ver
           </button>
-          <button onClick={() => setDeleteId(r.id)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', border: '1px solid #fca5a5', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: '#dc2626', fontSize: 12, fontFamily: 'Open Sans, sans-serif' }}>
-            <i className="bi bi-trash" style={{ fontSize: 11 }} />
+          <button title="Excluir" onClick={() => setDeleteId(r.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, padding: 0, background: '#fff', border: '1px solid #fca5a5', borderRadius: 6, cursor: 'pointer', color: '#dc2626', fontSize: 13, flexShrink: 0 }}>
+            <i className="bi bi-trash" />
           </button>
         </div>
       )

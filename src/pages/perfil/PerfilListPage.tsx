@@ -44,12 +44,12 @@ type ModalMode = 'view' | 'edit';
 interface PerfilForm { nome: string; identificador1doc: string; situacao: 'Ativo' | 'Inativo' }
 
 function PerfilModal({
-  perfil, isCreating, onClose, onSave,
+  perfil, isCreating, initialTab = 'dados', onClose, onSave,
 }: {
-  perfil: Perfil; isCreating: boolean;
+  perfil: Perfil; isCreating: boolean; initialTab?: ModalTab;
   onClose: () => void; onSave: (updated: Perfil) => void;
 }) {
-  const [tab, setTab] = useState<ModalTab>(isCreating ? 'dados' : 'dados');
+  const [tab, setTab] = useState<ModalTab>(initialTab);
   const [mode, setMode] = useState<ModalMode>(isCreating ? 'edit' : 'view');
   const [form, setForm] = useState<PerfilForm>({ nome: perfil.nome, identificador1doc: perfil.identificador1doc ?? '', situacao: perfil.situacao });
   const [errors, setErrors] = useState<Partial<PerfilForm>>({});
@@ -247,7 +247,7 @@ export default function PerfilListPage({ onNavigate }: { onNavigate: NavigateFn 
   const [pageSize, setPageSize] = useState(10);
   const [data, setData]         = useState<Perfil[]>(MOCK_PERFIS);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [modal, setModal]       = useState<{ perfil: Perfil; isCreating: boolean } | null>(null);
+  const [modal, setModal]       = useState<{ perfil: Perfil; isCreating: boolean; initialTab?: ModalTab } | null>(null);
 
   const filtered = useMemo(() => data.filter(p => !search || p.nome.toLowerCase().includes(search.toLowerCase())), [data, search]);
   const pageData = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -277,14 +277,17 @@ export default function PerfilListPage({ onNavigate }: { onNavigate: NavigateFn 
     { key: 'situacao', label: 'Situação', render: r => <SituacaoBadge s={r.situacao} /> },
     { key: 'cadastradoEm', label: 'Cadastrado em', width: 180 },
     {
-      key: 'acoes', label: 'Ações', sortable: false, width: 130,
+      key: 'acoes', label: 'Ações', sortable: false, width: 124,
       render: r => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <button onClick={() => setModal({ perfil: r, isCreating: false })} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#374151', fontSize: 12, fontWeight: 500, fontFamily: 'Open Sans, sans-serif' }}>
-            <i className="bi bi-pencil" style={{ fontSize: 11 }} /> Ver / Editar
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'nowrap' }}>
+          <button onClick={() => setModal({ perfil: r, isCreating: false, initialTab: 'dados' })} style={{ display: 'flex', alignItems: 'center', gap: 5, height: 32, padding: '0 10px', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer', color: '#374151', fontSize: 12, fontWeight: 500, fontFamily: 'Open Sans, sans-serif', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            <i className="bi bi-eye" style={{ fontSize: 12 }} /> Ver
           </button>
-          <button onClick={() => setDeleteId(r.id)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', border: '1px solid #fca5a5', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', color: '#dc2626', fontSize: 12, fontFamily: 'Open Sans, sans-serif' }}>
-            <i className="bi bi-trash" style={{ fontSize: 11 }} />
+          <button title="Permissões" onClick={() => setModal({ perfil: r, isCreating: false, initialTab: 'permissoes' })} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, padding: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, cursor: 'pointer', color: '#2563eb', fontSize: 13, flexShrink: 0 }}>
+            <i className="bi bi-shield-check" />
+          </button>
+          <button title="Excluir" onClick={() => setDeleteId(r.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, padding: 0, background: '#fff', border: '1px solid #fca5a5', borderRadius: 6, cursor: 'pointer', color: '#dc2626', fontSize: 13, flexShrink: 0 }}>
+            <i className="bi bi-trash" />
           </button>
         </div>
       )
@@ -317,7 +320,7 @@ export default function PerfilListPage({ onNavigate }: { onNavigate: NavigateFn 
       </div>
 
       {modal && (
-        <PerfilModal perfil={modal.perfil} isCreating={modal.isCreating} onClose={() => setModal(null)} onSave={handleSave} />
+        <PerfilModal perfil={modal.perfil} isCreating={modal.isCreating} initialTab={modal.initialTab} onClose={() => setModal(null)} onSave={handleSave} />
       )}
 
       <ConfirmDialog
