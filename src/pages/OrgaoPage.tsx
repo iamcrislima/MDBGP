@@ -25,8 +25,18 @@ const EMPTY_F = { uf: '', municipio: '', cnpj: '', situacao: '', abrangencia: ''
 
 /* ── Badges ─────────────────────────────────────────────────────────────── */
 function VigenciaBadge({ value }: { value: string }) {
-  const s = value === 'Vigente' ? { bg: '#dcfce7', color: '#15803d' } : { bg: '#f3f4f6', color: '#6b7280' };
+  const s = value === 'Vigente' ? { background: '#dcfce7', color: '#15803d' } : { background: '#f3f4f6', color: '#6b7280' };
   return <span style={{ ...s, borderRadius: 100, padding: '2px 10px', fontSize: 11, fontWeight: 600 }}>{value}</span>;
+}
+
+function VigenciaBadgeDark({ value }: { value: string }) {
+  const v = (value ?? '').toLowerCase();
+  const s = v === 'vigente'
+    ? { background: '#00963F', color: '#fff' }
+    : v.includes('suspenso')
+    ? { background: '#f5d000', color: '#1a1a1a' }
+    : { background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.55)' };
+  return <span style={{ ...s, borderRadius: 100, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>{value}</span>;
 }
 
 function TipoOrgaoBadge({ value }: { value: string }) {
@@ -81,10 +91,17 @@ function OrgaoModal({ item, onClose }: { item: Orgao; onClose: () => void }) {
             </div>
             <div>
               <div style={{ color: '#fff', fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{orgaoNome(item)}</div>
-              <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 12, marginTop: 2 }}>{item.tipoOrgao} · CNPJ: {item.cnpj}</div>
+              <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginTop: 6 }}>
+                <VigenciaBadgeDark value={item.situacaoVigencia} />
+                <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <i className="bi bi-calendar3" style={{ fontSize: 12 }} />
+                  {item.inicioVigencia} – {item.fimVigencia}
+                </span>
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>· CNPJ: {item.cnpj}</span>
+              </div>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 24, cursor: 'pointer', lineHeight: 1, padding: '0 4px' }}>×</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 24, cursor: 'pointer', lineHeight: 1, padding: '0 4px', alignSelf: 'flex-start' }}>×</button>
         </div>
 
         {/* Body scrollável */}
@@ -103,15 +120,11 @@ function OrgaoModal({ item, onClose }: { item: Orgao; onClose: () => void }) {
                 ['Tipo', null],
                 ['CNPJ', item.cnpj],
                 ['Abrangência', item.abrangencia],
-                ['Situação vigência', null],
                 ['Status', null],
-                ['Início vigência', item.inicioVigencia],
-                ['Fim vigência', item.fimVigencia],
               ] as [string, string | null][]).map(([label, value]) => (
                 <div key={label}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>{label}</div>
                   {label === 'Tipo' && <TipoOrgaoBadge value={item.tipoOrgao} />}
-                  {label === 'Situação vigência' && <VigenciaBadge value={item.situacaoVigencia} />}
                   {label === 'Status' && <SituacaoOrgaoBadge situacoes={item.situacoes} />}
                   {value !== null && <div style={{ fontSize: 13, color: '#374151', fontWeight: 500 }}>{value}</div>}
                 </div>
