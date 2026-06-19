@@ -92,12 +92,12 @@ function OrgaoModal({ item, onClose }: { item: Orgao; onClose: () => void }) {
             <div>
               <div style={{ color: '#fff', fontWeight: 700, fontSize: 15, lineHeight: 1.3 }}>{orgaoNome(item)}</div>
               <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginTop: 6 }}>
-                <VigenciaBadgeDark value={item.situacaoVigencia} />
                 <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 5 }}>
                   <i className="bi bi-calendar3" style={{ fontSize: 12 }} />
                   {item.inicioVigencia} – {item.fimVigencia}
                 </span>
                 <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>· CNPJ: {item.cnpj}</span>
+                <VigenciaBadgeDark value={item.situacaoVigencia} />
               </div>
             </div>
           </div>
