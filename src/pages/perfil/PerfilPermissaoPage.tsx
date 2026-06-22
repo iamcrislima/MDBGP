@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { NavigateFn } from '../../types';
+import Button from '../../components/shared/Button';
 import { MOCK_PERFIS } from '../../data/mockData';
 
 interface Permission {
@@ -42,31 +43,31 @@ export default function PerfilPermissaoPage({ onNavigate, selectedId }: { onNavi
   return (
     <div style={{ padding: '24px 28px' }}>
       <div style={{ marginBottom: 20 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>Permissões do Perfil</h1>
-        <nav style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-          <span style={{ cursor: 'pointer', color: '#2563eb' }} onClick={() => onNavigate('home')}>Início</span>
-          {' › '}<span style={{ cursor: 'pointer', color: '#2563eb' }} onClick={() => onNavigate('perfil')}>Perfis</span>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Permissões do Perfil</h1>
+        <nav style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginTop: 2 }}>
+          <span style={{ cursor: 'pointer', color: 'var(--color-info)' }} onClick={() => onNavigate('home')}>Início</span>
+          {' › '}<span style={{ cursor: 'pointer', color: 'var(--color-info)' }} onClick={() => onNavigate('perfil')}>Perfis</span>
           {' › '}Permissões — {perfil.nome}
         </nav>
       </div>
 
-      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '24px 24px', marginBottom: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid #f0f4fb' }}>
+      <div style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: 10, padding: '24px 24px', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid var(--color-bg-subtle)' }}>
           <div style={{ width: 40, height: 40, background: '#eff6ff', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <i className="bi bi-shield-check" style={{ color: '#2563eb', fontSize: 20 }} />
+            <i className="bi bi-shield-check" style={{ color: 'var(--color-info)', fontSize: 20 }} />
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 16, color: '#111827' }}>{perfil.nome}</div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>Configure as permissões de acesso para este perfil</div>
+            <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--color-text-primary)' }}>{perfil.nome}</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Configure as permissões de acesso para este perfil</div>
           </div>
         </div>
 
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
-            <tr style={{ background: '#f8fafc' }}>
-              <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 700, fontSize: 11, color: '#6b7280', borderBottom: '2px solid #e5e7eb', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Módulo / Funcionalidade</th>
+            <tr style={{ background: 'var(--color-bg-input)' }}>
+              <th style={{ padding: '10px 14px', textAlign: 'left', fontWeight: 700, fontSize: 11, color: 'var(--color-text-secondary)', borderBottom: '2px solid var(--color-border)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Módulo / Funcionalidade</th>
               {colLabels.map(l => (
-                <th key={l} style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 700, fontSize: 11, color: '#6b7280', borderBottom: '2px solid #e5e7eb', textTransform: 'uppercase', letterSpacing: '0.5px', width: 90 }}>{l}</th>
+                <th key={l} style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 700, fontSize: 11, color: 'var(--color-text-secondary)', borderBottom: '2px solid var(--color-border)', textTransform: 'uppercase', letterSpacing: '0.5px', width: 90 }}>{l}</th>
               ))}
             </tr>
           </thead>
@@ -74,22 +75,22 @@ export default function PerfilPermissaoPage({ onNavigate, selectedId }: { onNavi
             {perms.map((mod, mi) => (
               <React.Fragment key={mod.modulo}>
                 {/* Module header row */}
-                <tr style={{ background: '#f0f4fb' }}>
+                <tr style={{ background: 'var(--color-bg-subtle)' }}>
                   <td colSpan={5} style={{ padding: '8px 14px', fontWeight: 700, color: '#1e40af', fontSize: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
                     <i className={`bi ${mod.icon}`} style={{ fontSize: 13 }} />
                     {mod.modulo}
                   </td>
                 </tr>
                 {mod.items.map((item, ii) => (
-                  <tr key={item.label} style={{ borderBottom: '1px solid #f3f4f6' }} onMouseEnter={e => (e.currentTarget.style.background = '#fafafa')} onMouseLeave={e => (e.currentTarget.style.background = '#fff')}>
-                    <td style={{ padding: '10px 14px 10px 28px', color: '#374151' }}>{item.label}</td>
+                  <tr key={item.label} style={{ borderBottom: '1px solid var(--color-bg-page)' }} onMouseEnter={e => (e.currentTarget.style.background = '#fafafa')} onMouseLeave={e => (e.currentTarget.style.background = '#fff')}>
+                    <td style={{ padding: '10px 14px 10px 28px', color: 'var(--color-text-dark)' }}>{item.label}</td>
                     {colKeys.map(key => (
                       <td key={key} style={{ padding: '10px 14px', textAlign: 'center' }}>
                         <input
                           type="checkbox"
                           checked={item[key]}
                           onChange={() => toggle(mi, ii, key)}
-                          style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#2563eb' }}
+                          style={{ width: 16, height: 16, cursor: 'pointer', accentColor: 'var(--color-info)' }}
                         />
                       </td>
                     ))}
@@ -102,10 +103,10 @@ export default function PerfilPermissaoPage({ onNavigate, selectedId }: { onNavi
       </div>
 
       <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-        <button onClick={() => onNavigate('perfil')} style={{ padding: '10px 22px', border: '1.5px solid #d1d5db', borderRadius: 8, background: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: '#374151', fontFamily: 'Open Sans, sans-serif' }}>Cancelar</button>
-        <button onClick={handleSave} disabled={saving} style={{ padding: '10px 24px', border: 'none', borderRadius: 8, background: '#2563eb', color: '#fff', fontSize: 13, fontWeight: 600, cursor: saving ? 'default' : 'pointer', fontFamily: 'Open Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 6 }}>
-          {saving ? <><span className="spinner-border spinner-border-sm" style={{ width: 14, height: 14, borderWidth: 2 }} /> Salvando…</> : <><i className="bi bi-check2-circle" /> Salvar Permissões</>}
-        </button>
+        <button onClick={() => onNavigate('perfil')} style={{ padding: '10px 22px', border: '1.5px solid var(--color-border-input)', borderRadius: 8, background: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: 'var(--color-text-dark)', fontFamily: 'Open Sans, sans-serif' }}>Cancelar</button>
+        <Button variant="primary" onClick={handleSave} loading={saving} icon="bi-check2-circle">
+          {saving ? 'Salvando…' : 'Salvar Permissões'}
+        </Button>
       </div>
     </div>
   );

@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import type { Page, NavigateFn } from './types';
 import LogoMDB from './components/LogoMDB';
+import Button from './components/shared/Button';
+import Avatar from './components/shared/Avatar';
+import ModalBase from './components/shared/ModalBase';
+import LoadingSpinner from './components/shared/LoadingSpinner';
 
 // ── Pages (lazy loaded) ────────────────────────────────────────────────────────
 const LoginPage              = lazy(() => import('./pages/LoginPage'));
@@ -65,9 +69,7 @@ const ACTIVE_MAP: Record<Page, string> = {
 function PageSpinner() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}>
-      <div className="spinner-border text-success" role="status" style={{ width: 32, height: 32, borderWidth: 3 }}>
-        <span className="visually-hidden">Carregando...</span>
-      </div>
+      <LoadingSpinner size="lg" color="primary" />
     </div>
   );
 }
@@ -76,7 +78,6 @@ function PageSpinner() {
 export default function App() {
   const [isLoggedIn,   setIsLoggedIn]   = useState(false);
   const [currentPage,  setCurrentPage]  = useState<Page>('home');
-  const [selectedId,   setSelectedId]   = useState<number | undefined>();
   const [expandedId,   setExpandedId]   = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showModal,    setShowModal]    = useState(false);
@@ -132,7 +133,6 @@ export default function App() {
 
   const navigate: NavigateFn = useCallback((page: Page, id?: number) => {
     setCurrentPage(page);
-    setSelectedId(id);
     const sidebarId = ACTIVE_MAP[page];
     const navItem = NAV_ITEMS.find(n => n.id === sidebarId);
     if (navItem?.children) setExpandedId(sidebarId);
@@ -148,7 +148,6 @@ export default function App() {
     }
   };
 
-  // Sidebar width
   const sidebarW = isMobile
     ? (sidebarOpen ? SIDEBAR_OPEN_W : 0)
     : isTablet
@@ -156,19 +155,15 @@ export default function App() {
       : (sidebarOpen ? SIDEBAR_OPEN_W : SIDEBAR_CLOSED_W);
 
   // Content left margin — tablet always 56px (sidebar overlaps when open)
-  const contentML = isMobile ? 0 : isTablet ? SIDEBAR_TABLET_W : sidebarW;
-
-  // Show overlay behind sidebar on mobile/tablet
+  const contentML  = isMobile ? 0 : isTablet ? SIDEBAR_TABLET_W : sidebarW;
   const showOverlay = !isDesktop && sidebarOpen;
-
-  // Show labels in sidebar
-  const showLabels = sidebarOpen;
-  const activeId   = ACTIVE_MAP[currentPage] || 'home';
+  const showLabels  = sidebarOpen;
+  const activeId    = ACTIVE_MAP[currentPage] || 'home';
 
   // ── Login screen ────────────────────────────────────────────────────────────
   if (!isLoggedIn) {
     return (
-      <Suspense fallback={<div style={{ background: '#f4f6f9', minHeight: '100vh' }} />}>
+      <Suspense fallback={<div style={{ background: 'var(--color-bg-page)', minHeight: '100vh' }} />}>
         <LoginPage onLogin={() => setIsLoggedIn(true)} />
       </Suspense>
     );
@@ -179,7 +174,7 @@ export default function App() {
     switch (currentPage) {
       case 'home':                 return <BIPage onNavigate={navigate} />;
       case 'bi':                   return <BIDataPage onNavigate={navigate} />;
-      case 'mandatario':           return <MandatarioPage onNavigate={navigate} selectedId={selectedId} />;
+      case 'mandatario':           return <MandatarioPage onNavigate={navigate} />;
       case 'filiacao':             return <FiliacaoPage onNavigate={navigate} />;
       case 'orgao':                return <OrgaoPage onNavigate={navigate} />;
       case 'dirigente':            return <DirigentePage onNavigate={navigate} />;
@@ -198,49 +193,45 @@ export default function App() {
       {/* ── NAVBAR ─────────────────────────────────────────────────────────── */}
       <header style={{
         position: 'fixed', top: 0, left: 0, right: 0, height: navbarH,
-        background: '#ffffff', borderBottom: '0.5px solid #e5e7eb',
+        background: '#ffffff', borderBottom: '0.5px solid var(--color-border)',
         display: 'flex', alignItems: 'center', padding: isMobile ? '0 12px 0 12px' : '0 18px 0 20px',
         zIndex: 1040, gap: 4,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 10, flex: 1, minWidth: 0 }}>
           {/* Hamburger */}
-          <button
+          <Button
+            variant="icon"
             title={sidebarOpen ? 'Recolher menu' : 'Expandir menu'}
             onClick={() => setSidebarOpen(v => !v)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', fontSize: 18, minWidth: 44, minHeight: 44, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#f3f4f6'; e.currentTarget.style.color = '#374151'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#6b7280'; }}
-          >
-            <i className="bi bi-list" />
-          </button>
+            icon="bi-list"
+            style={{ fontSize: 18, width: 44, height: 44, minHeight: 44, flexShrink: 0 }}
+          />
 
           <LogoMDB style={{ height: isMobile ? 22 : 28, flexShrink: 0 }} />
 
           {/* Title — desktop only */}
           {isDesktop && (
-            <span style={{ color: '#111827', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap' }}>
+            <span style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap' }}>
               Gestão Partidária
             </span>
           )}
         </div>
 
         {/* Dark mode toggle */}
-        <button
+        <Button
+          variant="icon"
           title={darkMode ? 'Modo claro' : 'Modo escuro'}
           onClick={() => setDarkMode(v => !v)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', fontSize: 17, minWidth: 44, minHeight: 44, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#f3f4f6'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'none'; }}
-        >
-          <i className={`bi bi-${darkMode ? 'sun' : 'moon-stars'}`} />
-        </button>
+          icon={`bi-${darkMode ? 'sun' : 'moon-stars'}`}
+          style={{ fontSize: 17, width: 44, height: 44, minHeight: 44 }}
+        />
 
         {/* User avatar */}
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <button
             onClick={() => setShowDropdown(v => !v)}
             style={{
-              background: showDropdown ? '#f3f4f6' : 'none',
+              background: showDropdown ? 'var(--color-bg-page)' : 'none',
               border: 'none', borderRadius: 8,
               display: 'flex', alignItems: 'center', gap: isDesktop ? 8 : 0,
               padding: isDesktop ? '5px 8px' : '5px',
@@ -249,16 +240,11 @@ export default function App() {
             onMouseEnter={e => { if (!showDropdown) e.currentTarget.style.background = '#f9fafb'; }}
             onMouseLeave={e => { if (!showDropdown) e.currentTarget.style.background = 'none'; }}
           >
-            <div style={{
-              width: 30, height: 30, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #00963F 0%, #007A32 100%)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontWeight: 700, fontSize: 11, flexShrink: 0,
-            }}>IS</div>
+            <Avatar nome="Inácio Steffen" size={30} palette="gradient-green" />
             {isDesktop && (
               <>
-                <span style={{ color: '#374151', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>Inácio Steffen</span>
-                <i className="bi bi-chevron-down" style={{ color: '#9ca3af', fontSize: 11 }} />
+                <span style={{ color: 'var(--color-text-dark)', fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap' }}>Inácio Steffen</span>
+                <i className="bi bi-chevron-down" style={{ color: 'var(--color-text-muted)', fontSize: 11 }} />
               </>
             )}
           </button>
@@ -286,7 +272,7 @@ export default function App() {
         style={{
           position: 'fixed', top: navbarH, left: 0,
           width: sidebarW, height: `calc(100vh - ${navbarH}px)`,
-          background: '#f8f9fa', borderRight: '0.5px solid #e5e7eb',
+          background: '#f8f9fa', borderRight: '0.5px solid var(--color-border)',
           overflowY: 'auto', overflowX: 'hidden',
           transition: 'width 0.22s ease', zIndex: 1029,
           display: 'flex', flexDirection: 'column',
@@ -294,7 +280,7 @@ export default function App() {
       >
         {/* MENU label */}
         {showLabels && (
-          <div className="sidebar-menu-header" style={{ padding: '14px 20px 6px', fontSize: 10, fontWeight: 700, color: '#9ca3af', letterSpacing: '0.08em' }}>
+          <div className="sidebar-menu-header" style={{ padding: '14px 20px 6px', fontSize: 10, fontWeight: 700, color: 'var(--color-text-muted)', letterSpacing: '0.08em' }}>
             MENU
           </div>
         )}
@@ -313,30 +299,30 @@ export default function App() {
                     display: 'flex', alignItems: 'center',
                     width: '100%', border: 'none',
                     background: isActive ? '#f0fdf4' : 'none',
-                    borderLeft: isActive ? '3px solid #00963F' : '3px solid transparent',
+                    borderLeft: isActive ? '3px solid var(--color-primary)' : '3px solid transparent',
                     padding: showLabels ? '10px 16px 10px 17px' : '11px 0',
                     justifyContent: showLabels ? 'flex-start' : 'center',
                     cursor: 'pointer', gap: 11, minHeight: 44,
-                    color: isActive ? '#00963F' : '#374151',
+                    color: isActive ? 'var(--color-primary)' : 'var(--color-text-dark)',
                     transition: 'background 0.15s, color 0.15s',
                     fontFamily: 'Open Sans, sans-serif',
                     boxSizing: 'border-box',
                   }}
                   onMouseEnter={e => {
-                    if (!isActive) { e.currentTarget.style.background = '#f3f4f6'; e.currentTarget.style.color = '#111827'; }
+                    if (!isActive) { e.currentTarget.style.background = 'var(--color-bg-page)'; e.currentTarget.style.color = 'var(--color-text-primary)'; }
                   }}
                   onMouseLeave={e => {
-                    if (!isActive) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = '#374151'; }
+                    if (!isActive) { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = 'var(--color-text-dark)'; }
                   }}
                 >
-                  <i className={`bi ${item.icon}`} style={{ fontSize: 16, flexShrink: 0, width: 20, textAlign: 'center', color: isActive ? '#00963F' : '#6b7280' }} />
+                  <i className={`bi ${item.icon}`} style={{ fontSize: 16, flexShrink: 0, width: 20, textAlign: 'center', color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} />
                   {showLabels && (
                     <>
                       <span className="sidebar-label" style={{ flex: 1, textAlign: 'left', fontSize: 13, fontWeight: isActive ? 600 : 400, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.label}
                       </span>
                       {item.children && (
-                        <i className={`bi bi-chevron-${isExpanded ? 'up' : 'down'} sidebar-chevron`} style={{ fontSize: 11, color: '#9ca3af', flexShrink: 0 }} />
+                        <i className={`bi bi-chevron-${isExpanded ? 'up' : 'down'} sidebar-chevron`} style={{ fontSize: 11, color: 'var(--color-text-muted)', flexShrink: 0 }} />
                       )}
                     </>
                   )}
@@ -355,15 +341,15 @@ export default function App() {
                             width: '100%', padding: '8px 16px 8px 48px', minHeight: 44,
                             background: subActive ? '#dcfce7' : 'none',
                             border: 'none', borderLeft: 'none',
-                            color: subActive ? '#00963F' : '#6b7280',
+                            color: subActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                             textDecoration: 'none', fontSize: 12, cursor: 'pointer',
                             fontFamily: 'Open Sans, sans-serif', textAlign: 'left',
                             fontWeight: subActive ? 600 : 400,
                           }}
-                          onMouseEnter={e => { if (!subActive) { e.currentTarget.style.color = '#111827'; e.currentTarget.style.background = '#e9ecef'; } }}
-                          onMouseLeave={e => { if (!subActive) { e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.background = 'none'; } }}
+                          onMouseEnter={e => { if (!subActive) { e.currentTarget.style.color = 'var(--color-text-primary)'; e.currentTarget.style.background = '#e9ecef'; } }}
+                          onMouseLeave={e => { if (!subActive) { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.background = 'none'; } }}
                         >
-                          <i className="bi bi-chevron-right" style={{ fontSize: 9, color: '#9ca3af' }} />
+                          <i className="bi bi-chevron-right" style={{ fontSize: 9, color: 'var(--color-text-muted)' }} />
                           {sub.label}
                         </button>
                       );
@@ -376,8 +362,8 @@ export default function App() {
         </nav>
 
         {showLabels && (
-          <div style={{ padding: '11px 18px', borderTop: '0.5px solid #e5e7eb', background: '#f8f9fa' }}>
-            <span style={{ color: '#9ca3af', fontSize: 11 }}>v1.0.0</span>
+          <div style={{ padding: '11px 18px', borderTop: '0.5px solid var(--color-border)', background: '#f8f9fa' }}>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>v1.0.0</span>
           </div>
         )}
       </aside>
@@ -389,79 +375,49 @@ export default function App() {
         transition: 'margin-left 0.22s ease',
         display: 'flex', flexDirection: 'column',
       }}>
-        <main style={{ flex: 1, background: '#f3f4f6' }}>
+        <main style={{ flex: 1, background: 'var(--color-bg-page)' }}>
           <Suspense fallback={<PageSpinner />}>
             {pageContent}
           </Suspense>
         </main>
 
         <footer style={{
-          background: '#ffffff', borderTop: '0.5px solid #e5e7eb',
+          background: '#ffffff', borderTop: '0.5px solid var(--color-border)',
           padding: '12px 24px', textAlign: 'center',
-          color: '#9ca3af', fontSize: 12,
+          color: 'var(--color-text-muted)', fontSize: 12,
         }}>
           2026 © MDB
         </footer>
       </div>
 
       {/* ── MODAL ALTERAR SENHA ─────────────────────────────────────────────── */}
-      {showModal && (
-        <>
-          <div
-            onClick={() => setShowModal(false)}
-            style={{
-              position: 'fixed', inset: 0,
-              background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', zIndex: 1060,
-            }}
-          />
-          <div
-            role="dialog"
-            aria-modal
-            className={isMobile ? 'modal-bottom-sheet' : undefined}
-            style={isMobile ? {
-              position: 'fixed', bottom: 0, left: 0, right: 0,
-              background: '#fff', borderRadius: '16px 16px 0 0',
-              maxHeight: '92dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
-              boxShadow: '0 -8px 40px rgba(0,0,0,0.2)', zIndex: 1070,
-            } : {
-              position: 'fixed', top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              background: '#fff', borderRadius: 12,
-              width: 440, maxWidth: 'calc(100vw - 32px)',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.35)',
-              zIndex: 1070, overflow: 'hidden',
-            }}
-          >
-            <div style={{ padding: '18px 22px', background: '#fff', borderBottom: '0.5px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 34, height: 34, background: '#f0fdf4', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <i className="bi bi-shield-lock-fill" style={{ color: '#00963F', fontSize: 17 }} />
-                </div>
-                <h5 style={{ margin: 0, fontWeight: 700, color: '#111827', fontSize: 15 }}>Alterar Senha</h5>
-              </div>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: 22, minWidth: 44, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-            </div>
-            <div style={{ padding: '24px 22px 8px', overflowY: 'auto', flex: 1 }}>
-              {(['Senha Atual|bi-lock-fill|atual', 'Nova Senha|bi-key-fill|nova', 'Confirmar Nova Senha|bi-shield-check|confirmar'] as const).map((s) => {
-                const [label, icon, field] = s.split('|') as [string, string, 'atual' | 'nova' | 'confirmar'];
-                return <PasswordField key={field} label={label} icon={icon} value={pwForm[field]} onChange={v => setPwForm(p => ({ ...p, [field]: v }))} />;
-              })}
-            </div>
-            <div style={{ padding: '16px 22px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
-              <button
-                onClick={() => { setShowModal(false); setPwForm({ atual: '', nova: '', confirmar: '' }); }}
-                style={{ padding: '9px 20px', borderRadius: 8, border: '1.5px solid #e0e0e0', background: '#fff', color: '#555', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', minHeight: 44 }}
-              >Cancelar</button>
-              <button
-                onClick={() => { setShowModal(false); setPwForm({ atual: '', nova: '', confirmar: '' }); }}
-                style={{ padding: '9px 22px', borderRadius: 8, border: 'none', background: '#00963F', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 6, minHeight: 44 }}
-              >
-                <i className="bi bi-check2-circle" style={{ fontSize: 15 }} /> Salvar
-              </button>
-            </div>
+      <ModalBase open={showModal} onClose={() => setShowModal(false)} width={440} mobileBottomSheet={isMobile} backdropOpacity={0.65} backdropBlur={4}>
+        <ModalBase.LightHeader onClose={() => setShowModal(false)}>
+          <div style={{ width: 34, height: 34, background: '#f0fdf4', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <i className="bi bi-shield-lock-fill" style={{ color: 'var(--color-primary)', fontSize: 17 }} />
           </div>
-        </>
-      )}
+          <h5 style={{ margin: 0, fontWeight: 700, color: 'var(--color-text-primary)', fontSize: 15 }}>Alterar Senha</h5>
+        </ModalBase.LightHeader>
+        <ModalBase.Body padding="24px 22px 8px">
+          {(['Senha Atual|bi-lock-fill|atual', 'Nova Senha|bi-key-fill|nova', 'Confirmar Nova Senha|bi-shield-check|confirmar'] as const).map((s) => {
+            const [label, icon, field] = s.split('|') as [string, string, 'atual' | 'nova' | 'confirmar'];
+            return <PasswordField key={field} label={label} icon={icon} value={pwForm[field]} onChange={v => setPwForm(p => ({ ...p, [field]: v }))} />;
+          })}
+        </ModalBase.Body>
+        <ModalBase.Footer style={{ padding: '16px 22px', gap: 10 }}>
+          <Button
+            variant="ghost"
+            onClick={() => { setShowModal(false); setPwForm({ atual: '', nova: '', confirmar: '' }); }}
+            style={{ minHeight: 44 }}
+          >Cancelar</Button>
+          <Button
+            variant="primary"
+            onClick={() => { setShowModal(false); setPwForm({ atual: '', nova: '', confirmar: '' }); }}
+            icon="bi-check2-circle"
+            style={{ minHeight: 44 }}
+          >Salvar</Button>
+        </ModalBase.Footer>
+      </ModalBase>
     </div>
   );
 }
@@ -471,16 +427,16 @@ function UserDropdown({ onAlterarSenha }: { onAlterarSenha: () => void }) {
   return (
     <div style={{
       position: 'absolute', right: 0, top: 44,
-      background: '#ffffff', border: '1px solid #e5e7eb',
+      background: '#ffffff', border: '1px solid var(--color-border)',
       borderRadius: 10, width: 214,
       boxShadow: '0 8px 24px rgba(0,0,0,0.10)', zIndex: 1050, overflow: 'hidden',
     }}>
-      <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid #f3f4f6' }}>
+      <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--color-bg-page)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 36, height: 36, background: 'linear-gradient(135deg, #00963F 0%, #007A32 100%)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12 }}>IS</div>
+          <Avatar nome="Inácio Steffen" size={36} palette="gradient-green" />
           <div>
-            <div style={{ color: '#111827', fontWeight: 600, fontSize: 13 }}>Inacio Steffen</div>
-            <div style={{ color: '#9ca3af', fontSize: 11 }}>Administrador</div>
+            <div style={{ color: 'var(--color-text-primary)', fontWeight: 600, fontSize: 13 }}>Inacio Steffen</div>
+            <div style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>Administrador</div>
           </div>
         </div>
       </div>
@@ -488,7 +444,7 @@ function UserDropdown({ onAlterarSenha }: { onAlterarSenha: () => void }) {
         <button onClick={onAlterarSenha} style={dropBtnStyle(false)}>
           <i className="bi bi-key-fill" style={{ fontSize: 14, width: 16 }} /> Alterar Senha
         </button>
-        <div style={{ height: 1, background: '#f3f4f6', margin: '4px 10px' }} />
+        <div style={{ height: 1, background: 'var(--color-bg-page)', margin: '4px 10px' }} />
         <button onClick={() => window.location.reload()} style={dropBtnStyle(true)}>
           <i className="bi bi-box-arrow-right" style={{ fontSize: 14, width: 16 }} /> Sair
         </button>
@@ -501,7 +457,7 @@ function dropBtnStyle(danger: boolean): React.CSSProperties {
   return {
     display: 'flex', alignItems: 'center', gap: 10,
     width: '100%', padding: '9px 16px', minHeight: 44,
-    color: danger ? '#dc2626' : '#374151',
+    color: danger ? 'var(--color-error)' : 'var(--color-text-dark)',
     fontSize: 13, cursor: 'pointer',
     background: 'none', border: 'none',
     textAlign: 'left', fontFamily: 'Open Sans, sans-serif',
@@ -512,14 +468,14 @@ function dropBtnStyle(danger: boolean): React.CSSProperties {
 function PasswordField({ label, icon, value, onChange }: { label: string; icon: string; value: string; onChange: (v: string) => void }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#6b7280', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</label>
+      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</label>
       <div style={{ position: 'relative' }}>
-        <i className={`bi ${icon}`} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', fontSize: 14, pointerEvents: 'none' }} />
+        <i className={`bi ${icon}`} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', fontSize: 14, pointerEvents: 'none' }} />
         <input
           type="password" value={value} onChange={e => onChange(e.target.value)}
-          style={{ width: '100%', height: 44, paddingLeft: 36, paddingRight: 14, border: '1.5px solid #e5e7eb', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'Open Sans, sans-serif' }}
-          onFocus={e => { e.target.style.borderColor = '#00963F'; e.target.style.boxShadow = '0 0 0 3px rgba(0,150,63,0.12)'; }}
-          onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.boxShadow = 'none'; }}
+          style={{ width: '100%', height: 44, paddingLeft: 36, paddingRight: 14, border: '1.5px solid var(--color-border)', borderRadius: 8, fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'Open Sans, sans-serif' }}
+          onFocus={e => { e.target.style.borderColor = 'var(--color-primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(0,150,63,0.12)'; }}
+          onBlur={e => { e.target.style.borderColor = 'var(--color-border)'; e.target.style.boxShadow = 'none'; }}
         />
       </div>
     </div>
@@ -542,7 +498,7 @@ function WelcomeCard({ onNavigate, isMobile }: { onNavigate: NavigateFn; isMobil
   return (
     <div style={{ padding: pad, maxWidth: 1100 }}>
       <div style={{
-        background: 'linear-gradient(135deg, #003d1a 0%, #005229 50%, #00963F 100%)',
+        background: 'linear-gradient(135deg, #003d1a 0%, #005229 50%, var(--color-primary) 100%)',
         borderRadius: 12, padding: isMobile ? '22px 18px 18px' : '32px 32px 28px', marginBottom: 18,
         boxShadow: '0 4px 20px rgba(0,150,63,0.25)',
       }}>
@@ -571,8 +527,8 @@ function WelcomeCard({ onNavigate, isMobile }: { onNavigate: NavigateFn; isMobil
         </div>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: isMobile ? '14px 16px' : '20px 24px', marginBottom: 16 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>Acesso Rápido</div>
+      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid var(--color-border)', padding: isMobile ? '14px 16px' : '20px 24px', marginBottom: 16 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>Acesso Rápido</div>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {quickLinks.map(l => (
             <button key={l.page} onClick={() => onNavigate(l.page)} style={{
@@ -588,12 +544,12 @@ function WelcomeCard({ onNavigate, isMobile }: { onNavigate: NavigateFn; isMobil
         </div>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e5e7eb', padding: isMobile ? '14px 16px' : '20px 28px' }}>
+      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid var(--color-border)', padding: isMobile ? '14px 16px' : '20px 28px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
           <i className="bi bi-hand-wave-fill" style={{ color: '#f59e0b', fontSize: isMobile ? 18 : 22 }} />
           <h5 style={{ fontWeight: 700, color: '#1e1e2d', margin: 0, fontSize: isMobile ? 14 : 16 }}>Bem-vindo, Inacio Steffen!</h5>
         </div>
-        <p style={{ color: '#6b7280', fontSize: isMobile ? 13 : 14, margin: 0, lineHeight: 1.7 }}>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: isMobile ? 13 : 14, margin: 0, lineHeight: 1.7 }}>
           Utilize o menu lateral para navegar entre os módulos do sistema. Gerencie filiados, mandatários, órgãos partidários e muito mais.
         </p>
       </div>

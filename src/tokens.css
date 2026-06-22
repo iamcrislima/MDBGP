@@ -1,0 +1,172 @@
+/*
+ * Design System Tokens — MDB Gestão Partidária
+ * Auditoria: 632 ocorrências de valores hardcoded em 29 arquivos.
+ * Este arquivo é a fonte canônica de todos os tokens visuais.
+ * Importar ANTES de qualquer outro CSS no main.tsx.
+ */
+
+:root {
+
+  /* ─────────────────────────────────────────
+   * BRAND — Cores MDB
+   * ───────────────────────────────────────── */
+  --color-mdb-green:       #00963F; /* verde principal — 60+ ocorrências */
+  --color-mdb-green-dark:  #007A32; /* hover de botões, bordas ativas — 15+ */
+  --color-mdb-green-light: #E8F5E9; /* bg de badges sucesso, ícones KPI — canônico (era #E8F5E9 / #dcfce7 / #f0fdf4) */
+  --color-mdb-blue:        #003399; /* azul partidário MDB */
+  --color-mdb-yellow:      #FFD000; /* amarelo partidário MDB — canônico (era #f5d000 / #FFD000) */
+
+  /* ─────────────────────────────────────────
+   * PRIMARY — Alias semântico do verde MDB
+   * ───────────────────────────────────────── */
+  --color-primary:         var(--color-mdb-green);
+  --color-primary-dark:    var(--color-mdb-green-dark);
+  --color-primary-light:   var(--color-mdb-green-light);
+  --color-primary-ring:    rgba(0, 150, 63, 0.25); /* foco/shadow de botão primário */
+  --color-primary-border:  #A8D5B5; /* borda em superfícies de destaque verde claro */
+
+  /* ─────────────────────────────────────────
+   * NEUTROS — Texto
+   * ───────────────────────────────────────── */
+  --color-text-primary:    #111827; /* títulos — 25+ */
+  --color-text-dark:       #374151; /* corpo de texto, valores — 20+ */
+  --color-text-strong:     #1e293b; /* texto em destaque — mais escuro que dark, mais claro que primary */
+  --color-text-secondary:  #6b7280; /* labels, subtítulos — 35+ */
+  --color-text-muted:      #9ca3af; /* placeholders, ícones inativos — 20+ */
+  --color-text-inverse:    #ffffff; /* texto sobre fundos escuros */
+
+  /* ─────────────────────────────────────────
+   * NEUTROS — Bordas
+   * ───────────────────────────────────────── */
+  --color-border:          #e5e7eb; /* borda padrão de cards e tabelas — 40+ */
+  --color-border-input:    #d1d5db; /* borda de inputs e selects — 20+ */
+  --color-border-strong:   #9ca3af; /* borda de elementos em destaque */
+
+  /* ─────────────────────────────────────────
+   * NEUTROS — Fundos
+   * ───────────────────────────────────────── */
+  --color-bg-page:         #f4f6f9; /* fundo da aplicação — canônico (App.tsx usava #f3f4f6 por engano) */
+  --color-bg-card:         #ffffff; /* fundo de cards e modais */
+  --color-bg-subtle:       #f9fafb; /* linhas alternadas, painéis — canônico (era #f8fafc / #f9fafb / #fafafa) */
+  --color-bg-input:        #f8fafc; /* fundo de inputs em estado normal */
+  --color-bg-overlay:      rgba(0, 0, 0, 0.50); /* backdrop de modais — canônico (variava 0.45–0.65) */
+
+  /* ─────────────────────────────────────────
+   * MODAL
+   * ───────────────────────────────────────── */
+  --color-modal-header:    #12121f; /* header navy escuro dos modais de detalhe — 5 arquivos */
+
+  /* ─────────────────────────────────────────
+   * FEEDBACK — Sucesso
+   * ───────────────────────────────────────── */
+  --color-success:         #15803d;
+  --color-success-dark:    #166534;
+  --color-success-bg:      #dcfce7; /* canônico (era #dcfce7 / #E8F5E9) */
+  --color-success-border:  #bbf7d0;
+
+  /* ─────────────────────────────────────────
+   * FEEDBACK — Erro / Destrutivo
+   * ───────────────────────────────────────── */
+  --color-error:           #dc2626; /* 15+ ocorrências */
+  --color-error-dark:      #b91c1c;
+  --color-error-bg:        #fee2e2; /* canônico (era #fee2e2 / #fef2f2) */
+  --color-error-border:    #fca5a5;
+
+  /* ─────────────────────────────────────────
+   * FEEDBACK — Aviso
+   * ───────────────────────────────────────── */
+  --color-warning:         #d97706; /* canônico (era #d97706 / #b45309 / #92400e) */
+  --color-warning-dark:    #b45309;
+  --color-warning-bg:      #fef3c7; /* canônico (era #fef3c7 / #fef9c3 / #fffbeb) */
+  --color-warning-border:  #fde68a;
+
+  /* ─────────────────────────────────────────
+   * FEEDBACK — Informação
+   * ───────────────────────────────────────── */
+  --color-info:            #2563eb;
+  --color-info-bg:         #eff6ff;
+  --color-info-border:     #bfdbfe;
+
+  /* ─────────────────────────────────────────
+   * ESPECIAIS
+   * ───────────────────────────────────────── */
+  --color-gov-blue:        #1351b4; /* link gov.br / 1doc */
+  --color-purple:          #8b5cf6; /* acento em dashboards e avatares */
+  --color-purple-bg:       #ede9fe;
+  --color-avatar-blue:     #3b82f6; /* gradiente-blue de avatares (início) */
+  --color-avatar-purple:   #8b5cf6; /* gradiente-blue de avatares (fim)   */
+  --color-transferred:     #7e22ce; /* filiado "Transferido" — texto */
+  --color-transferred-bg:  #f3e8ff; /* filiado "Transferido" — fundo */
+
+  /* ─────────────────────────────────────────
+   * BADGE — superfícies escuras (header navy)
+   * ───────────────────────────────────────── */
+  --color-text-ink:        #1a1a1a;                  /* texto em fundos coloridos sólidos (ex: badge warning dark) */
+  --color-badge-dark-bg:   rgba(255, 255, 255, 0.12); /* badge neutral em superfícies escuras */
+  --color-badge-dark-text: rgba(255, 255, 255, 0.55); /* texto de badge neutral em superfícies escuras */
+
+  /* ─────────────────────────────────────────
+   * BORDER RADIUS
+   * ───────────────────────────────────────── */
+  --radius-pill:           9999px; /* badges de status — 40+ ocorrências (era `100`) */
+  --radius-modal:          12px;   /* modais principais — 10+ */
+  --radius-card:           10px;   /* cards de conteúdo e filtros — 30+ */
+  --radius-input:          8px;    /* inputs, dropdowns, botões padrão — 30+ */
+  --radius-action:         6px;    /* botões de ação em tabela ("Ver") — 10+ */
+  --radius-sm:             4px;    /* scrollbar thumb, elementos pequenos */
+  --radius-circle:         50%;    /* avatares, ícones circulares de KPI */
+
+  /* ─────────────────────────────────────────
+   * SHADOWS
+   * ───────────────────────────────────────── */
+  --shadow-card:           0 1px 4px rgba(0, 0, 0, 0.06);   /* KPICard, cards de visão geral */
+  --shadow-card-hover:     0 2px 6px rgba(0, 0, 0, 0.08);   /* mobile cards em hover */
+  --shadow-dropdown:       0 8px 24px rgba(0, 0, 0, 0.10);  /* dropdowns, CustomSelect, Toast — canônico (variava 0.10–0.12) */
+  --shadow-modal:          0 24px 64px rgba(0, 0, 0, 0.25); /* modais principais — canônico (variava 0.25–0.30) */
+  --shadow-modal-light:    0 20px 60px rgba(0, 0, 0, 0.20); /* modais de Perfil e Usuário */
+  --shadow-login:          0 8px 32px rgba(0, 0, 0, 0.14);  /* card de login */
+  --shadow-primary-glow:   0 4px 20px rgba(0, 150, 63, 0.25); /* hero card / WelcomeCard */
+
+  /* ─────────────────────────────────────────
+   * ESPAÇAMENTOS RECORRENTES
+   * ───────────────────────────────────────── */
+  --space-page-x:          28px;   /* padding horizontal de páginas (desktop) */
+  --space-page-y:          24px;   /* padding vertical de páginas (desktop) */
+  --space-page-mobile:     16px;   /* padding de páginas (mobile) */
+  --space-card:            22px;   /* padding interno de cards (paired com 20px vertical) */
+  --space-card-y:          20px;   /* padding vertical interno de cards */
+  --space-gap-kpi:         16px;   /* gap entre KPI cards */
+  --space-gap-filter:      14px;   /* gap entre campos de filtro */
+  --space-gap-actions:     8px;    /* gap entre botões de ação inline */
+  --space-section:         20px;   /* margin-bottom entre seções principais */
+  --space-row:             14px;   /* margin-bottom entre linhas de filtro */
+
+  /* ─────────────────────────────────────────
+   * TIPOGRAFIA
+   * ───────────────────────────────────────── */
+  --font-family:           'Open Sans', sans-serif;
+
+  --font-size-h1:          20px;   /* título de página */
+  --font-size-h2:          16px;   /* título de card / seção */
+  --font-size-body:        14px;   /* corpo de texto */
+  --font-size-sm:          13px;   /* filtros, botões, conteúdo de tabela */
+  --font-size-xs:          12px;   /* labels secundários, paginação */
+  --font-size-2xs:         11px;   /* labels uppercase, meta info */
+  --font-size-badge:       11px;   /* badges de status — alias semântico de --font-size-2xs */
+  --font-size-kpi:         30px;   /* valor numérico de KPI card — canônico (era 26/28/30) */
+
+  --font-weight-regular:   400;
+  --font-weight-semibold:  600;
+  --font-weight-bold:      700;
+
+  /* ─────────────────────────────────────────
+   * LAYOUT
+   * ───────────────────────────────────────── */
+  --header-height:         56px;
+  --sidebar-collapsed:     48px;
+  --sidebar-expanded:      248px;
+  --sidebar-tablet:        240px;
+  --z-dropdown:            100;
+  --z-modal:               1000;
+  --z-toast:               2000;
+}

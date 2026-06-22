@@ -15,11 +15,11 @@ const NAME_TO_UF: Record<string, string> = {
 };
 
 function stepColor(value: number): string {
-  if (value >= 500) return '#00963F';
+  if (value >= 500) return 'var(--color-primary)';
   if (value >= 300) return '#4CAF50';
-  if (value >= 150) return '#A8D5B5';
-  if (value > 0)    return '#E8F5E9';
-  return '#e5e7eb';
+  if (value >= 150) return 'var(--color-primary-border)';
+  if (value > 0)    return 'var(--color-primary-light)';
+  return 'var(--color-border)';
 }
 
 const LARGE_STATES = new Set(['AM', 'PA', 'MT', 'BA', 'MG', 'GO', 'SP', 'RS', 'MS', 'PI', 'MA', 'TO']);
@@ -83,7 +83,7 @@ export default function BrazilMap({ data = [], onStateClick, height = 420, selec
 
   if (loading) {
     return (
-      <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', fontSize: 13 }}>
+      <div style={{ height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)', fontSize: 13 }}>
         Carregando mapa...
       </div>
     );
@@ -129,7 +129,7 @@ export default function BrazilMap({ data = [], onStateClick, height = 420, selec
           // text color: white on dark fills, dark on light
           const textFill = isSelected
             ? '#1a1f2e'
-            : (d && d.value >= 300) ? '#fff' : '#374151';
+            : (d && d.value >= 300) ? '#fff' : 'var(--color-text-dark)';
 
           const fontSize = LARGE_STATES.has(uf) ? 9 : 7.5;
 
@@ -184,27 +184,27 @@ export default function BrazilMap({ data = [], onStateClick, height = 420, selec
           const ty = Math.max(tooltip.y - th - 10, 2);
           return (
             <g transform={`translate(${tx},${ty})`} pointerEvents="none">
-              <rect width={tw} height={th} rx={7} fill="#1e293b" opacity={0.96} />
+              <rect width={tw} height={th} rx={7} fill="var(--color-text-strong)" opacity={0.96} />
               {/* Header label */}
               <text x={12} y={16} fontSize={8.5} fontWeight="600" fill="rgba(148,163,184,0.85)" fontFamily="Open Sans, sans-serif" letterSpacing="0.6">
                 ÓRGÃOS VIGENTES
               </text>
               {/* State name */}
-              <text x={12} y={31} fontSize={12.5} fontWeight="700" fill="#f8fafc" fontFamily="Open Sans, sans-serif">
+              <text x={12} y={31} fontSize={12.5} fontWeight="700" fill="var(--color-bg-input)" fontFamily="Open Sans, sans-serif">
                 {tooltip.name}
               </text>
               {/* Divider */}
               <line x1={12} y1={38} x2={tw - 12} y2={38} stroke="rgba(255,255,255,0.1)" strokeWidth={0.5} />
               {/* Total Órgãos */}
               <text x={12} y={53} fontSize={10} fill="#94a3b8" fontFamily="Open Sans, sans-serif">Total Órgãos</text>
-              <text x={tw - 12} y={53} fontSize={10} fontWeight="700" fill="#f8fafc" fontFamily="Open Sans, sans-serif" textAnchor="end">
+              <text x={tw - 12} y={53} fontSize={10} fontWeight="700" fill="var(--color-bg-input)" fontFamily="Open Sans, sans-serif" textAnchor="end">
                 {tooltip.value.toLocaleString('pt-BR')}
               </text>
               {/* IBGE */}
               {hasIbge && (
                 <>
                   <text x={12} y={69} fontSize={10} fill="#94a3b8" fontFamily="Open Sans, sans-serif">Total IBGE</text>
-                  <text x={tw - 12} y={69} fontSize={10} fontWeight="700" fill="#f8fafc" fontFamily="Open Sans, sans-serif" textAnchor="end">
+                  <text x={tw - 12} y={69} fontSize={10} fontWeight="700" fill="var(--color-bg-input)" fontFamily="Open Sans, sans-serif" textAnchor="end">
                     {tooltip.ibge!.toLocaleString('pt-BR')} mun.
                   </text>
                 </>

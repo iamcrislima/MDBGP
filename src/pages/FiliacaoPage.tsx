@@ -5,6 +5,11 @@ import CustomSelect from '../components/shared/CustomSelect';
 import PessoaDetalheModal from '../components/shared/PessoaDetalheModal';
 import { MOCK_FILIADOS, MOCK_MANDATARIOS } from '../data/mockData';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import Badge, { type BadgeVariant } from '../components/shared/Badge';
+import Button from '../components/shared/Button';
+import Avatar from '../components/shared/Avatar';
+import PageHeader from '../components/shared/PageHeader';
+import FilterPanel from '../components/shared/FilterPanel';
 
 const ALL_DATA: Filiado[] = Array.from({ length: 1444 }, (_, i) => ({
   ...MOCK_FILIADOS[i % MOCK_FILIADOS.length],
@@ -54,38 +59,24 @@ function getPhotoUrl(cpf: string, nome: string): string {
 
 function PersonPhotoSmall({ cpf, nome }: { cpf: string; nome: string }) {
   const [err, setErr] = React.useState(false);
-  const initials = nome.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
   if (err) {
-    return (
-      <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#e8f5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#00963F', flexShrink: 0 }}>
-        {initials}
-      </div>
-    );
+    return <Avatar nome={nome} size={32} palette="green" />;
   }
   return (
     <img
       src={getPhotoUrl(cpf, nome)}
       alt={nome}
       onError={() => setErr(true)}
-      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '1.5px solid #e5e7eb' }}
+      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, border: '1.5px solid var(--color-border)' }}
     />
   );
 }
 
-function SituacaoBadge({ value }: { value: string }) {
-  const map: Record<string, { bg: string; color: string }> = {
-    Regular:     { bg: '#dcfce7', color: '#15803d' },
-    Excluído:    { bg: '#fee2e2', color: '#dc2626' },
-    Transferido: { bg: '#f3e8ff', color: '#7e22ce' },
-  };
-  const s = map[value] ?? { bg: '#f3f4f6', color: '#6b7280' };
-  return <span style={{ ...s, borderRadius: 100, padding: '2px 10px', fontWeight: 600, fontSize: 11, whiteSpace: 'nowrap' }}>{value}</span>;
-}
-
-function MandatarioBadge({ value }: { value?: string }) {
-  if (!value) return <span style={{ color: '#d1d5db', fontSize: 14 }}>—</span>;
-  const yes = value === 'Sim';
-  return <span style={{ background: yes ? '#E8F5E9' : '#f3f4f6', color: yes ? '#007A32' : '#6b7280', borderRadius: 100, padding: '2px 10px', fontWeight: 600, fontSize: 11 }}>{value}</span>;
+function situacaoFiliadoVariant(value: string): BadgeVariant {
+  if (value === 'Regular') return 'success';
+  if (value === 'Excluído') return 'error';
+  if (value === 'Transferido') return 'transferido';
+  return 'neutral';
 }
 
 function toMandatario(f: Filiado): Mandatario {
@@ -110,8 +101,8 @@ function toMandatario(f: Filiado): Mandatario {
   };
 }
 
-const lb: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 5 };
-const inp: React.CSSProperties = { border: '1px solid #d1d5db', borderRadius: 8, padding: '8px 10px', fontSize: 13, background: '#fff', width: '100%', fontFamily: 'Open Sans, sans-serif', color: '#374151', height: 38, boxSizing: 'border-box' };
+const lb: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 5 };
+const inp: React.CSSProperties = { border: '1px solid var(--color-border-input)', borderRadius: 8, padding: '8px 10px', fontSize: 13, background: '#fff', width: '100%', fontFamily: 'Open Sans, sans-serif', color: 'var(--color-text-dark)', height: 38, boxSizing: 'border-box' };
 
 export default function FiliacaoPage({ onNavigate: _onNavigate }: { onNavigate: NavigateFn }) {
   const { isMobile, isTablet } = useBreakpoint();
@@ -156,173 +147,153 @@ export default function FiliacaoPage({ onNavigate: _onNavigate }: { onNavigate: 
       ),
     },
     { key: 'cpf', label: 'CPF', width: 130 },
-    { key: 'situacao', label: 'Situação', render: r => <SituacaoBadge value={r.situacao} /> },
-    { key: 'mandatarioAtual', label: 'Mandatário?', width: 110, render: r => <MandatarioBadge value={r.mandatarioAtual} /> },
+    { key: 'situacao', label: 'Situação', render: r => <Badge variant={situacaoFiliadoVariant(r.situacao)} label={r.situacao} /> },
+    { key: 'mandatarioAtual', label: 'Mandatário?', width: 110, render: r => r.mandatarioAtual ? <Badge variant={r.mandatarioAtual === 'Sim' ? 'success' : 'neutral'} label={r.mandatarioAtual} /> : <span style={{ color: 'var(--color-border-input)', fontSize: 14 }}>—</span> },
     { key: 'uf', label: 'UF', width: 55 },
     { key: 'municipio', label: 'Município' },
     { key: 'dataFiliacao', label: 'Data filiação', width: 120 },
     {
       key: 'acoes', label: 'Ações', sortable: false, width: 80,
       render: r => (
-        <button onClick={() => setSelected(r)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: '#374151', fontSize: 12, fontWeight: 500, fontFamily: 'Open Sans, sans-serif' }}>
-          <i className="bi bi-eye" style={{ fontSize: 12 }} /> Ver
-        </button>
+        <Button variant="ghost" size="sm" onClick={() => setSelected(r)} icon="bi-eye">Ver</Button>
       )
     },
   ];
 
   return (
     <div style={{ padding: isMobile ? '16px' : '24px 28px', fontFamily: 'Open Sans, sans-serif' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-        <div>
-          <h1 style={{ fontSize: isMobile ? 18 : 20, fontWeight: 700, color: '#111827', margin: 0 }}>Consultar Filiados</h1>
-          <div style={{ color: '#6b7280', fontSize: 13, marginTop: 2 }}>
-            <span style={{ color: '#00963F', fontWeight: 600 }}>{filtered.length.toLocaleString('pt-BR')}</span> registros encontrados
+      <PageHeader
+        title="Consultar Filiados"
+        subtitle={<><span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{filtered.length.toLocaleString('pt-BR')}</span>{' registros encontrados'}</>}
+        action={
+          <Button variant="ghost" onClick={() => setFilterOpen(v => !v)}>
+            <i className={`bi bi-funnel${filterOpen ? '-fill' : ''}`} style={{ color: filterOpen ? 'var(--color-primary)' : 'var(--color-text-secondary)' }} />
+            {' '}Filtros
+          </Button>
+        }
+      />
+
+      <FilterPanel
+        open={filterOpen}
+        onFilter={() => setFilterOpen(false)}
+        onClear={() => { setFilters({ ...EMPTY_F }); setPage(1); }}
+        action={<Button variant="ghost" onClick={() => { /* TODO: exportar */ }} icon="bi-download">Exportar</Button>}
+      >
+        {/* Linha 1: Nome | Nome na urna | CPF | Mandatário atual? | Situação */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
+          <div>
+            <label style={lb}>Nome do filiado</label>
+            <input style={inp} placeholder="Nome completo" value={filters.nome}
+              onChange={e => { setFilters(p => ({ ...p, nome: e.target.value })); setPage(1); }}
+              onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--color-border-input)')} />
+          </div>
+          <div>
+            <label style={lb}>Nome na urna</label>
+            <input style={inp} placeholder="Nome de urna" value={filters.nomeUrna}
+              onChange={e => { setFilters(p => ({ ...p, nomeUrna: e.target.value })); setPage(1); }}
+              onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--color-border-input)')} />
+          </div>
+          <div>
+            <label style={lb}>CPF</label>
+            <input style={inp} placeholder="Pesquisar CPF" value={filters.cpf}
+              onChange={e => { setFilters(p => ({ ...p, cpf: e.target.value })); setPage(1); }}
+              onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--color-border-input)')} />
+          </div>
+          <div>
+            <label style={lb}>Mandatário atual?</label>
+            <CustomSelect value={filters.mandatario} onChange={set('mandatario')} options={MAND_ATUAL_OPTS} placeholder="Todos" />
+          </div>
+          <div>
+            <label style={lb}>Situação</label>
+            <CustomSelect value={filters.situacao} onChange={set('situacao')} options={SITUACAO_OPTS} placeholder="Todas" />
           </div>
         </div>
-        <button onClick={() => setFilterOpen(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', border: '1px solid #d1d5db', borderRadius: 8, background: '#fff', cursor: 'pointer', fontSize: 13, color: '#374151', fontFamily: 'Open Sans, sans-serif' }}>
-          <i className={`bi bi-funnel${filterOpen ? '-fill' : ''}`} style={{ color: filterOpen ? '#00963F' : '#6b7280' }} /> Filtros
-        </button>
-      </div>
 
-      {filterOpen && (
-        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '20px 22px', marginBottom: 20 }}>
-
-          {/* Linha 1: Nome | Nome na urna | CPF | Mandatário atual? | Situação */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
-            <div>
-              <label style={lb}>Nome do filiado</label>
-              <input style={inp} placeholder="Nome completo" value={filters.nome}
-                onChange={e => { setFilters(p => ({ ...p, nome: e.target.value })); setPage(1); }}
-                onFocus={e => (e.target.style.borderColor = '#00963F')}
-                onBlur={e => (e.target.style.borderColor = '#d1d5db')} />
-            </div>
-            <div>
-              <label style={lb}>Nome na urna</label>
-              <input style={inp} placeholder="Nome de urna" value={filters.nomeUrna}
-                onChange={e => { setFilters(p => ({ ...p, nomeUrna: e.target.value })); setPage(1); }}
-                onFocus={e => (e.target.style.borderColor = '#00963F')}
-                onBlur={e => (e.target.style.borderColor = '#d1d5db')} />
-            </div>
-            <div>
-              <label style={lb}>CPF</label>
-              <input style={inp} placeholder="Pesquisar CPF" value={filters.cpf}
-                onChange={e => { setFilters(p => ({ ...p, cpf: e.target.value })); setPage(1); }}
-                onFocus={e => (e.target.style.borderColor = '#00963F')}
-                onBlur={e => (e.target.style.borderColor = '#d1d5db')} />
-            </div>
-            <div>
-              <label style={lb}>Mandatário atual?</label>
-              <CustomSelect value={filters.mandatario} onChange={set('mandatario')} options={MAND_ATUAL_OPTS} placeholder="Todos" />
-            </div>
-            <div>
-              <label style={lb}>Situação</label>
-              <CustomSelect value={filters.situacao} onChange={set('situacao')} options={SITUACAO_OPTS} placeholder="Todas" />
-            </div>
+        {/* Linha 2: Cargo | Sexo | Raça | UF | Município */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
+          <div>
+            <label style={lb}>Cargo no partido</label>
+            <CustomSelect value={filters.cargo} onChange={set('cargo')} options={CARGO_OPTS} placeholder="Todos" />
           </div>
-
-          {/* Linha 2: Cargo | Sexo | Raça | UF | Município */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(5, 1fr)', gap: 14, marginBottom: 14 }}>
-            <div>
-              <label style={lb}>Cargo no partido</label>
-              <CustomSelect value={filters.cargo} onChange={set('cargo')} options={CARGO_OPTS} placeholder="Todos" />
-            </div>
-            <div>
-              <label style={lb}>Sexo</label>
-              <CustomSelect value={filters.sexo} onChange={set('sexo')} options={SEXO_OPTS} placeholder="Todos" />
-            </div>
-            <div>
-              <label style={lb}>Raça / Cor</label>
-              <CustomSelect value={filters.raca} onChange={set('raca')} options={RACA_OPTS} placeholder="Todos" />
-            </div>
-            <div>
-              <label style={lb}>UF</label>
-              <CustomSelect value={filters.uf} onChange={v => { setFilters(p => ({ ...p, uf: v, municipio: '' })); setPage(1); }} options={UF_OPTS} placeholder="Todas" />
-            </div>
-            <div>
-              <label style={lb}>Município</label>
-              <CustomSelect value={filters.municipio} onChange={set('municipio')} options={MUN_BY_UF[filters.uf] ?? []} placeholder="Todos" disabled={!filters.uf} />
-            </div>
+          <div>
+            <label style={lb}>Sexo</label>
+            <CustomSelect value={filters.sexo} onChange={set('sexo')} options={SEXO_OPTS} placeholder="Todos" />
           </div>
-
-          {/* Linha 3: Idade range | Pop. município range */}
-          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
-            <div>
-              <label style={lb}>Idade</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <input style={{ ...inp, flex: 1, minWidth: 0 }} type="number" min="0" placeholder="De" value={filters.idadeMin}
-                  onChange={e => { setFilters(p => ({ ...p, idadeMin: e.target.value })); setPage(1); }}
-                  onFocus={e => (e.target.style.borderColor = '#00963F')}
-                  onBlur={e => (e.target.style.borderColor = '#d1d5db')} />
-                <span style={{ color: '#9ca3af', fontSize: 12, flexShrink: 0 }}>–</span>
-                <input style={{ ...inp, flex: 1, minWidth: 0 }} type="number" min="0" placeholder="Até" value={filters.idadeMax}
-                  onChange={e => { setFilters(p => ({ ...p, idadeMax: e.target.value })); setPage(1); }}
-                  onFocus={e => (e.target.style.borderColor = '#00963F')}
-                  onBlur={e => (e.target.style.borderColor = '#d1d5db')} />
-              </div>
-            </div>
-            <div>
-              <label style={lb}>Pop. município</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <input style={{ ...inp, flex: 1, minWidth: 0 }} type="number" min="0" placeholder="De" value={filters.popMin}
-                  onChange={e => { setFilters(p => ({ ...p, popMin: e.target.value })); setPage(1); }}
-                  onFocus={e => (e.target.style.borderColor = '#00963F')}
-                  onBlur={e => (e.target.style.borderColor = '#d1d5db')} />
-                <span style={{ color: '#9ca3af', fontSize: 12, flexShrink: 0 }}>–</span>
-                <input style={{ ...inp, flex: 1, minWidth: 0 }} type="number" min="0" placeholder="Até" value={filters.popMax}
-                  onChange={e => { setFilters(p => ({ ...p, popMax: e.target.value })); setPage(1); }}
-                  onFocus={e => (e.target.style.borderColor = '#00963F')}
-                  onBlur={e => (e.target.style.borderColor = '#d1d5db')} />
-              </div>
-            </div>
+          <div>
+            <label style={lb}>Raça / Cor</label>
+            <CustomSelect value={filters.raca} onChange={set('raca')} options={RACA_OPTS} placeholder="Todos" />
           </div>
-
-          {/* Botões */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <button onClick={() => { /* TODO: exportar */ }}
-              style={{ padding: '7px 16px', border: '1px solid #d1d5db', borderRadius: 7, background: '#fff', fontSize: 13, cursor: 'pointer', color: '#374151', fontFamily: 'Open Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <i className="bi bi-download" /> Exportar
-            </button>
-            <button onClick={() => { setFilters({ ...EMPTY_F }); setPage(1); }}
-              style={{ padding: '7px 16px', border: '1px solid #d1d5db', borderRadius: 7, background: '#fff', fontSize: 13, cursor: 'pointer', color: '#6b7280', fontFamily: 'Open Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <i className="bi bi-x-circle" /> Nova pesquisa
-            </button>
-            <button onClick={() => setFilterOpen(false)}
-              style={{ padding: '7px 18px', border: 'none', borderRadius: 7, background: '#00963F', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 5 }}>
-              <i className="bi bi-funnel-fill" /> Filtrar
-            </button>
+          <div>
+            <label style={lb}>UF</label>
+            <CustomSelect value={filters.uf} onChange={v => { setFilters(p => ({ ...p, uf: v, municipio: '' })); setPage(1); }} options={UF_OPTS} placeholder="Todas" />
+          </div>
+          <div>
+            <label style={lb}>Município</label>
+            <CustomSelect value={filters.municipio} onChange={set('municipio')} options={MUN_BY_UF[filters.uf] ?? []} placeholder="Todos" disabled={!filters.uf} />
           </div>
         </div>
-      )}
 
-      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: '20px 22px' }}>
-        <DataTable
-          columns={columns as unknown as Column<Record<string, unknown>>[]}
-          data={pageData as unknown as Record<string, unknown>[]}
+        {/* Linha 3: Idade range | Pop. município range */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(4, 1fr)', gap: 14 }}>
+          <div>
+            <label style={lb}>Idade</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input style={{ ...inp, flex: 1, minWidth: 0 }} type="number" min="0" placeholder="De" value={filters.idadeMin}
+                onChange={e => { setFilters(p => ({ ...p, idadeMin: e.target.value })); setPage(1); }}
+                onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
+                onBlur={e => (e.target.style.borderColor = 'var(--color-border-input)')} />
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 12, flexShrink: 0 }}>–</span>
+              <input style={{ ...inp, flex: 1, minWidth: 0 }} type="number" min="0" placeholder="Até" value={filters.idadeMax}
+                onChange={e => { setFilters(p => ({ ...p, idadeMax: e.target.value })); setPage(1); }}
+                onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
+                onBlur={e => (e.target.style.borderColor = 'var(--color-border-input)')} />
+            </div>
+          </div>
+          <div>
+            <label style={lb}>Pop. município</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <input style={{ ...inp, flex: 1, minWidth: 0 }} type="number" min="0" placeholder="De" value={filters.popMin}
+                onChange={e => { setFilters(p => ({ ...p, popMin: e.target.value })); setPage(1); }}
+                onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
+                onBlur={e => (e.target.style.borderColor = 'var(--color-border-input)')} />
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 12, flexShrink: 0 }}>–</span>
+              <input style={{ ...inp, flex: 1, minWidth: 0 }} type="number" min="0" placeholder="Até" value={filters.popMax}
+                onChange={e => { setFilters(p => ({ ...p, popMax: e.target.value })); setPage(1); }}
+                onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
+                onBlur={e => (e.target.style.borderColor = 'var(--color-border-input)')} />
+            </div>
+          </div>
+        </div>
+      </FilterPanel>
+
+      <div style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: 10, padding: '20px 22px' }}>
+        <DataTable<Filiado>
+          columns={columns}
+          data={pageData}
           totalRecords={filtered.length}
           pageSize={pageSize}
           currentPage={page}
           onPageChange={setPage}
           onPageSizeChange={s => { setPageSize(s); setPage(1); }}
           emptyMessage="Nenhum filiado encontrado."
-          mobileCard={(row) => {
-            const r = row as unknown as Filiado;
+          mobileCard={(r) => {
             return (
               <div style={{ background: '#fff', border: '1px solid #dde3ee', borderRadius: 10, padding: '14px 16px', boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, marginRight: 8 }}>
                     <PersonPhotoSmall cpf={r.cpf} nome={r.nomeFiliado} />
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#111827' }}>{r.nomeFiliado}</div>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--color-text-primary)' }}>{r.nomeFiliado}</div>
                   </div>
-                  <SituacaoBadge value={r.situacao} />
+                  <Badge variant={situacaoFiliadoVariant(r.situacao)} label={r.situacao} />
                 </div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 2, fontFamily: 'monospace' }}>{r.cpf}</div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}>{r.uf ?? '—'} · {r.municipio ?? '—'}</div>
-                <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 8 }}>Filiação: {r.dataFiliacao ?? '—'}</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 2, fontFamily: 'monospace' }}>{r.cpf}</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 6 }}>{r.uf ?? '—'} · {r.municipio ?? '—'}</div>
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 8 }}>Filiação: {r.dataFiliacao ?? '—'}</div>
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button onClick={() => setSelected(r)} style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#00963F', border: 'none', borderRadius: 6, padding: '6px 14px', cursor: 'pointer', color: '#fff', fontSize: 12, fontWeight: 600, fontFamily: 'Open Sans, sans-serif', minHeight: 36 }}>
-                    <i className="bi bi-eye" style={{ fontSize: 11 }} /> Ver
-                  </button>
+                  <Button variant="primary" size="sm" onClick={() => setSelected(r)} icon="bi-eye">Ver</Button>
                 </div>
               </div>
             );

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Pagination from './Pagination';
+import EmptyState from './EmptyState';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 export interface Column<T> {
@@ -23,89 +25,8 @@ interface DataTableProps<T> {
   mobileCard?: (row: T, index: number) => React.ReactNode;
 }
 
-// ── Pagination ────────────────────────────────────────────────────────────────
-interface PaginationProps {
-  current: number;
-  total: number;
-  onPage: (p: number) => void;
-  pageSize: number;
-  totalRecords: number;
-  isMobile?: boolean;
-}
-
-function Pagination({ current, total, onPage, pageSize, totalRecords, isMobile }: PaginationProps) {
-  const from = totalRecords === 0 ? 0 : (current - 1) * pageSize + 1;
-  const to   = Math.min(current * pageSize, totalRecords);
-
-  if (isMobile) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, gap: 8 }}>
-        <button
-          style={{ flex: 1, padding: '9px 0', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: current === 1 ? '#d1d5db' : '#374151', fontSize: 13, fontWeight: 500, cursor: current === 1 ? 'default' : 'pointer', fontFamily: 'Open Sans, sans-serif', minHeight: 44 }}
-          onClick={() => current > 1 && onPage(current - 1)}
-          disabled={current === 1}
-        >
-          ← Anterior
-        </button>
-        <span style={{ fontSize: 12, color: '#6b7280', whiteSpace: 'nowrap', textAlign: 'center', minWidth: 72 }}>
-          {current} de {total}
-        </span>
-        <button
-          style={{ flex: 1, padding: '9px 0', border: '1px solid #e5e7eb', borderRadius: 8, background: '#fff', color: current === total ? '#d1d5db' : '#374151', fontSize: 13, fontWeight: 500, cursor: current === total ? 'default' : 'pointer', fontFamily: 'Open Sans, sans-serif', minHeight: 44 }}
-          onClick={() => current < total && onPage(current + 1)}
-          disabled={current === total}
-        >
-          Próximo →
-        </button>
-      </div>
-    );
-  }
-
-  const pages: (number | '...')[] = [];
-  if (total <= 7) {
-    for (let i = 1; i <= total; i++) pages.push(i);
-  } else {
-    pages.push(1);
-    if (current > 3) pages.push('...');
-    for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
-    if (current < total - 2) pages.push('...');
-    pages.push(total);
-  }
-
-  const btnStyle = (active: boolean, disabled?: boolean): React.CSSProperties => ({
-    padding: '6px 11px', border: '1px solid #e5e7eb', borderRadius: 6,
-    background: active ? '#00963F' : '#fff',
-    color: active ? '#fff' : disabled ? '#d1d5db' : '#374151',
-    fontSize: 13, fontWeight: active ? 600 : 400,
-    cursor: disabled ? 'default' : 'pointer',
-    fontFamily: 'Open Sans, sans-serif',
-    minWidth: 36, textAlign: 'center',
-  });
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 16, flexWrap: 'wrap', gap: 10 }}>
-      <span style={{ fontSize: 13, color: '#6b7280' }}>
-        Mostrando de <strong>{from}</strong> até <strong>{to}</strong> de <strong>{totalRecords.toLocaleString('pt-BR')}</strong> registros
-      </span>
-      <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-        <button style={btnStyle(false, current === 1)} onClick={() => current > 1 && onPage(current - 1)}>
-          Anterior
-        </button>
-        {pages.map((p, i) =>
-          p === '...'
-            ? <span key={`e${i}`} style={{ padding: '6px 8px', color: '#6b7280', fontSize: 13 }}>...</span>
-            : <button key={p} style={btnStyle(p === current)} onClick={() => onPage(p as number)}>{p}</button>
-        )}
-        <button style={btnStyle(false, current === total)} onClick={() => current < total && onPage(current + 1)}>
-          Próximo
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ── Main DataTable ────────────────────────────────────────────────────────────
-export default function DataTable<T extends Record<string, unknown>>({
+export default function DataTable<T extends object>({
   columns,
   data,
   totalRecords,
@@ -147,32 +68,16 @@ export default function DataTable<T extends Record<string, unknown>>({
 
   return (
     <div>
-      {/* Page size selector — hidden on mobile when using cards */}
-      {!showCards && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 13, color: '#6b7280' }}>Exibir</span>
-          {[10, 25, 50, 100].map(n => (
-            <button key={n} onClick={() => onPageSizeChange?.(n)}
-              style={{ padding: '3px 10px', borderRadius: 5, border: `1px solid ${n === pageSize ? '#00963F' : '#e5e7eb'}`, background: n === pageSize ? '#00963F' : '#fff', color: n === pageSize ? '#fff' : '#374151', fontSize: 12, fontWeight: n === pageSize ? 600 : 400, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif', minHeight: 32 }}>
-              {n}
-            </button>
-          ))}
-          <span style={{ fontSize: 13, color: '#6b7280' }}>por página</span>
-        </div>
-      )}
 
       {/* ── Mobile card view ── */}
       {showCards ? (
         <div>
           {data.length === 0 ? (
-            <div style={{ padding: '32px 14px', textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
-              <i className="bi bi-inbox" style={{ fontSize: 24, display: 'block', marginBottom: 8 }} />
-              {emptyMessage}
-            </div>
+            <EmptyState icon="bi-inbox" title={emptyMessage} size="sm" />
           ) : (
             <div className="mobile-card-list">
               {data.map((row, i) => (
-                <React.Fragment key={i}>{mobileCard!(row, i)}</React.Fragment>
+                <React.Fragment key={String((row as Record<string, unknown>).id ?? i)}>{mobileCard!(row, i)}</React.Fragment>
               ))}
             </div>
           )}
@@ -189,8 +94,8 @@ export default function DataTable<T extends Record<string, unknown>>({
                     onClick={() => col.sortable !== false && handleSort(String(col.key))}
                     style={{
                       padding: '10px 14px', textAlign: 'left',
-                      fontWeight: 600, fontSize: 12, color: '#6b7280',
-                      borderBottom: '2px solid #e5e7eb',
+                      fontWeight: 600, fontSize: 12, color: 'var(--color-text-secondary)',
+                      borderBottom: '2px solid var(--color-border)',
                       cursor: col.sortable !== false ? 'pointer' : 'default',
                       userSelect: 'none', whiteSpace: 'nowrap',
                       width: col.width, background: '#fff',
@@ -200,8 +105,8 @@ export default function DataTable<T extends Record<string, unknown>>({
                       {col.label}
                       {col.sortable !== false && (
                         <span style={{ display: 'inline-flex', flexDirection: 'column', opacity: sortKey === String(col.key) ? 1 : 0.4 }}>
-                          <i className="bi bi-caret-up-fill" style={{ fontSize: 8, lineHeight: 1, color: sortKey === String(col.key) && sortDir === 'asc' ? '#00963F' : '#9ca3af' }} />
-                          <i className="bi bi-caret-down-fill" style={{ fontSize: 8, lineHeight: 1, color: sortKey === String(col.key) && sortDir === 'desc' ? '#00963F' : '#9ca3af' }} />
+                          <i className="bi bi-caret-up-fill" style={{ fontSize: 8, lineHeight: 1, color: sortKey === String(col.key) && sortDir === 'asc' ? 'var(--color-primary)' : 'var(--color-text-muted)' }} />
+                          <i className="bi bi-caret-down-fill" style={{ fontSize: 8, lineHeight: 1, color: sortKey === String(col.key) && sortDir === 'desc' ? 'var(--color-primary)' : 'var(--color-text-muted)' }} />
                         </span>
                       )}
                     </span>
@@ -212,28 +117,27 @@ export default function DataTable<T extends Record<string, unknown>>({
             <tbody>
               {data.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} style={{ padding: '32px 14px', textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>
-                    <i className="bi bi-inbox" style={{ fontSize: 24, display: 'block', marginBottom: 8 }} />
-                    {emptyMessage}
+                  <td colSpan={columns.length}>
+                    <EmptyState icon="bi-inbox" title={emptyMessage} size="sm" />
                   </td>
                 </tr>
               ) : (
                 data.map((row, ri) => (
                   <tr
-                    key={ri}
+                    key={String((row as Record<string, unknown>).id ?? ri)}
                     style={{ background: striped && ri % 2 === 1 ? '#fafafa' : '#fff', transition: 'background 0.1s' }}
                     onMouseEnter={e => (e.currentTarget.style.background = '#f0fdf4')}
                     onMouseLeave={e => (e.currentTarget.style.background = striped && ri % 2 === 1 ? '#fafafa' : '#fff')}
                   >
                     {columns.map(col => (
-                      <td key={String(col.key)} style={{ padding: '11px 14px', borderBottom: '1px solid #f3f4f6', color: '#374151', verticalAlign: 'middle' }}>
+                      <td key={String(col.key)} style={{ padding: '11px 14px', borderBottom: '1px solid var(--color-bg-page)', color: 'var(--color-text-dark)', verticalAlign: 'middle' }}>
                         {col.render
                           ? col.render(row)
                           : (() => {
                             const v = (row as Record<string, unknown>)[String(col.key)];
                             const s = String(v ?? '');
                             const empty = !s || ['nao informada', 'n/a', '---', 'undefined', 'null'].includes(s.toLowerCase());
-                            return empty ? <span style={{ color: '#d1d5db', fontSize: 14 }}>—</span> : s;
+                            return empty ? <span style={{ color: 'var(--color-border-input)', fontSize: 14 }}>—</span> : s;
                           })()}
                       </td>
                     ))}
@@ -248,12 +152,13 @@ export default function DataTable<T extends Record<string, unknown>>({
       {/* Pagination */}
       {onPageChange && (
         <Pagination
-          current={currentPage}
-          total={totalPages}
-          onPage={onPageChange}
-          pageSize={pageSize}
-          totalRecords={total}
-          isMobile={isMobile}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          totalItems={total}
+          itemsPerPage={pageSize}
+          onItemsPerPageChange={onPageSizeChange}
+          itemsPerPageOptions={[10, 25, 50, 100]}
         />
       )}
     </div>

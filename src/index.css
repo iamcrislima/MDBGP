@@ -3,7 +3,7 @@
 body {
   margin: 0;
   font-family: 'Open Sans', sans-serif;
-  background: #f4f6f9;
+  background: var(--color-bg-page);
 }
 
 /* Thin scrollbar for sidebar */
@@ -21,7 +21,7 @@ aside {
 /* Filter on html = viewport-level inversion; avoids breaking position:fixed children */
 html[data-dark="true"] {
   filter: invert(1) hue-rotate(180deg);
-  background: #f4f6f9;
+  background: var(--color-bg-page);
 }
 
 /* Re-invert assets so they show in natural colors */
@@ -51,6 +51,11 @@ html[data-dark="true"] .logo-mdb .cls-4 {
 /* ── Touch devices: suppress hover flicker ── */
 @media (hover: none) {
   button:hover { background: initial !important; }
+}
+
+/* ── Spinner rotation ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ── Bottom sheet slide-up animation ── */

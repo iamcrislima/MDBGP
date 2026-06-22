@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import type { NavigateFn } from '../types';
+import EmptyState from '../components/shared/EmptyState';
 import { MOCK_DIRIGENTES, MOCK_ORGAOS, MOCK_FILIADOS, MOCK_MANDATARIOS } from '../data/mockData';
 
 type BITab = 'dirigentes' | 'orgaos' | 'filiados' | 'mandatarios' | 'usuarios' | 'convenios' | 'ondemand';
@@ -63,8 +64,8 @@ const PAGE_SIZE = 50;
 function Sel({ label, opts, value, onChange }: { label: string; opts: string[]; value: string; onChange: (v: string) => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 150 }}>
-      <label style={{ fontSize: 10, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</label>
-      <select value={value} onChange={e => onChange(e.target.value)} style={{ height: 34, padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 12, outline: 'none', background: '#fff', fontFamily: 'Open Sans, sans-serif', cursor: 'pointer' }}>
+      <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</label>
+      <select value={value} onChange={e => onChange(e.target.value)} style={{ height: 34, padding: '0 10px', border: '1px solid var(--color-border-input)', borderRadius: 6, fontSize: 12, outline: 'none', background: '#fff', fontFamily: 'Open Sans, sans-serif', cursor: 'pointer' }}>
         <option value="">Todos</option>
         {opts.map(o => <option key={o} value={o}>{o}</option>)}
       </select>
@@ -75,8 +76,8 @@ function Sel({ label, opts, value, onChange }: { label: string; opts: string[]; 
 function Inp({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 160 }}>
-      <label style={{ fontSize: 10, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</label>
-      <input value={value} onChange={e => onChange(e.target.value)} style={{ height: 34, padding: '0 10px', border: '1px solid #d1d5db', borderRadius: 6, fontSize: 12, outline: 'none', fontFamily: 'Open Sans, sans-serif' }} onFocus={e => e.target.style.borderColor = '#00963F'} onBlur={e => e.target.style.borderColor = '#d1d5db'} />
+      <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</label>
+      <input value={value} onChange={e => onChange(e.target.value)} style={{ height: 34, padding: '0 10px', border: '1px solid var(--color-border-input)', borderRadius: 6, fontSize: 12, outline: 'none', fontFamily: 'Open Sans, sans-serif' }} onFocus={e => e.target.style.borderColor = 'var(--color-primary)'} onBlur={e => e.target.style.borderColor = 'var(--color-border-input)'} />
     </div>
   );
 }
@@ -124,15 +125,15 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
 
       {/* Breadcrumb */}
       <div style={{ marginBottom: 14 }}>
-        <span style={{ fontSize: 12, color: '#6b7280' }}>
-          <span style={{ cursor: 'pointer', color: '#00963F' }} onClick={() => onNavigate('home')}>Início</span>
+        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
+          <span style={{ cursor: 'pointer', color: 'var(--color-primary)' }} onClick={() => onNavigate('home')}>Início</span>
           {' › '}Business Intelligence
         </span>
       </div>
 
       {/* Tabs */}
-      <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, marginBottom: 16, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb', overflowX: 'auto' }}>
+      <div style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, marginBottom: 16, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--color-border)', overflowX: 'auto' }}>
           {TABS.map(t => (
             <button
               key={t.id}
@@ -140,8 +141,8 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '12px 18px', border: 'none', background: 'none',
-                borderBottom: `3px solid ${tab === t.id ? '#00963F' : 'transparent'}`,
-                color: tab === t.id ? '#00963F' : '#6b7280',
+                borderBottom: `3px solid ${tab === t.id ? 'var(--color-primary)' : 'transparent'}`,
+                color: tab === t.id ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                 fontWeight: tab === t.id ? 700 : 400,
                 fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap',
                 fontFamily: 'Open Sans, sans-serif',
@@ -161,8 +162,8 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
           {/* Filters + Quadro row */}
           <div style={{ display: 'flex', gap: 14, marginBottom: 14, alignItems: 'flex-start' }}>
             {/* Filter card */}
-            <div style={{ flex: 1, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '14px 16px' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Filtros</div>
+            <div style={{ flex: 1, background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, padding: '14px 16px' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-dark)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Filtros</div>
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
                 <Sel label="Abrangência de Órgão" opts={['Municipal', 'Estadual', 'Nacional']} value={filters.abrangencia} onChange={v => setFilters(p => ({ ...p, abrangencia: v }))} />
                 <Sel label="UF Órgão" opts={UFS} value={filters.uf} onChange={v => setFilters(p => ({ ...p, uf: v }))} />
@@ -170,12 +171,12 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
                 <Sel label="Tipo Órgão" opts={['definitivo', 'provisório']} value={filters.tipo} onChange={v => setFilters(p => ({ ...p, tipo: v }))} />
                 <button
                   onClick={() => { setApplied({ ...filters }); setPage(1); }}
-                  style={{ height: 34, padding: '0 18px', border: 'none', borderRadius: 6, background: '#00963F', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Open Sans, sans-serif', alignSelf: 'flex-end' }}
+                  style={{ height: 34, padding: '0 18px', border: 'none', borderRadius: 6, background: 'var(--color-primary)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontFamily: 'Open Sans, sans-serif', alignSelf: 'flex-end' }}
                 >
                   <i className="bi bi-funnel-fill" /> Filtrar dados
                 </button>
                 {(applied.abrangencia || applied.uf || applied.municipio || applied.tipo) && (
-                  <button onClick={() => { setFilters({ abrangencia: '', uf: '', municipio: '', tipo: '' }); setApplied({ abrangencia: '', uf: '', municipio: '', tipo: '' }); setPage(1); }} style={{ height: 34, padding: '0 14px', border: '1px solid #d1d5db', borderRadius: 6, background: '#fff', fontSize: 12, cursor: 'pointer', color: '#6b7280', alignSelf: 'flex-end', fontFamily: 'Open Sans, sans-serif' }}>
+                  <button onClick={() => { setFilters({ abrangencia: '', uf: '', municipio: '', tipo: '' }); setApplied({ abrangencia: '', uf: '', municipio: '', tipo: '' }); setPage(1); }} style={{ height: 34, padding: '0 14px', border: '1px solid var(--color-border-input)', borderRadius: 6, background: '#fff', fontSize: 12, cursor: 'pointer', color: 'var(--color-text-secondary)', alignSelf: 'flex-end', fontFamily: 'Open Sans, sans-serif' }}>
                     <i className="bi bi-x-circle" /> Limpar
                   </button>
                 )}
@@ -183,19 +184,19 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
             </div>
 
             {/* Quadro de dirigentes */}
-            <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '14px 20px', minWidth: 220 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid #f0f4fb' }}>
-                <i className="bi bi-person-badge-fill" style={{ color: '#00963F', fontSize: 16 }} />
-                <span style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>Quadro de dirigentes</span>
+            <div style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, padding: '14px 20px', minWidth: 220 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid var(--color-bg-subtle)' }}>
+                <i className="bi bi-person-badge-fill" style={{ color: 'var(--color-primary)', fontSize: 16 }} />
+                <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--color-text-strong)' }}>Quadro de dirigentes</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {[
-                  { label: 'Total', value: quadro.total.toLocaleString('pt-BR'), color: '#1e293b' },
-                  { label: 'Municipal', value: quadro.municipal.toLocaleString('pt-BR'), color: '#00963F' },
-                  { label: 'Vigentes', value: quadro.vigentes.toLocaleString('pt-BR'), color: '#15803d' },
+                  { label: 'Total', value: quadro.total.toLocaleString('pt-BR'), color: 'var(--color-text-strong)' },
+                  { label: 'Municipal', value: quadro.municipal.toLocaleString('pt-BR'), color: 'var(--color-primary)' },
+                  { label: 'Vigentes', value: quadro.vigentes.toLocaleString('pt-BR'), color: 'var(--color-success)' },
                 ].map(stat => (
                   <div key={stat.label} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 }}>
-                    <span style={{ fontSize: 11, color: '#6b7280' }}>{stat.label}</span>
+                    <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>{stat.label}</span>
                     <span style={{ fontSize: 18, fontWeight: 800, color: stat.color }}>{stat.value}</span>
                   </div>
                 ))}
@@ -207,38 +208,38 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
           <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
 
             {/* Exploração de gráficos (column picker) */}
-            <div style={{ width: 210, flexShrink: 0, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
-              <div style={{ padding: '10px 14px', background: '#f8fafc', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: 6 }}>
-                <i className="bi bi-sliders" style={{ color: '#00963F', fontSize: 13 }} />
-                <span style={{ fontWeight: 700, fontSize: 12, color: '#374151' }}>Exploração de gráficos</span>
+            <div style={{ width: 210, flexShrink: 0, background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, overflow: 'hidden' }}>
+              <div style={{ padding: '10px 14px', background: 'var(--color-bg-input)', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <i className="bi bi-sliders" style={{ color: 'var(--color-primary)', fontSize: 13 }} />
+                <span style={{ fontWeight: 700, fontSize: 12, color: 'var(--color-text-dark)' }}>Exploração de gráficos</span>
               </div>
               <div style={{ padding: '8px 10px 6px' }}>
-                <input value={colSearch} onChange={e => setColSearch(e.target.value)} placeholder="Pesquisar..." style={{ width: '100%', height: 30, padding: '0 8px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Open Sans, sans-serif' }} />
+                <input value={colSearch} onChange={e => setColSearch(e.target.value)} placeholder="Pesquisar..." style={{ width: '100%', height: 30, padding: '0 8px', border: '1px solid var(--color-border)', borderRadius: 6, fontSize: 11, outline: 'none', boxSizing: 'border-box', fontFamily: 'Open Sans, sans-serif' }} />
               </div>
               <div style={{ maxHeight: 420, overflowY: 'auto', padding: '4px 0 8px' }}>
                 {filteredColDefs.map(col => (
-                  <label key={col.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 14px', cursor: 'pointer', fontSize: 11, color: '#374151' }} onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <input type="checkbox" checked={visibleCols.has(col.key)} onChange={() => toggleCol(col.key)} style={{ cursor: 'pointer', accentColor: '#00963F', width: 13, height: 13, flexShrink: 0 }} />
+                  <label key={col.key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 14px', cursor: 'pointer', fontSize: 11, color: 'var(--color-text-dark)' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--color-bg-input)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    <input type="checkbox" checked={visibleCols.has(col.key)} onChange={() => toggleCol(col.key)} style={{ cursor: 'pointer', accentColor: 'var(--color-primary)', width: 13, height: 13, flexShrink: 0 }} />
                     {col.label}
                   </label>
                 ))}
               </div>
-              <div style={{ padding: '8px 10px', borderTop: '1px solid #f0f4fb', display: 'flex', gap: 6 }}>
-                <button onClick={() => setVisibleCols(new Set(DIRIG_COLS.map(c => c.key)))} style={{ flex: 1, height: 26, border: '1px solid #d1d5db', borderRadius: 4, background: '#fff', fontSize: 10, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}>Tudo</button>
-                <button onClick={() => setVisibleCols(new Set())} style={{ flex: 1, height: 26, border: '1px solid #d1d5db', borderRadius: 4, background: '#fff', fontSize: 10, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}>Nenhum</button>
+              <div style={{ padding: '8px 10px', borderTop: '1px solid var(--color-bg-subtle)', display: 'flex', gap: 6 }}>
+                <button onClick={() => setVisibleCols(new Set(DIRIG_COLS.map(c => c.key)))} style={{ flex: 1, height: 26, border: '1px solid var(--color-border-input)', borderRadius: 4, background: '#fff', fontSize: 10, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}>Tudo</button>
+                <button onClick={() => setVisibleCols(new Set())} style={{ flex: 1, height: 26, border: '1px solid var(--color-border-input)', borderRadius: 4, background: '#fff', fontSize: 10, cursor: 'pointer', fontFamily: 'Open Sans, sans-serif' }}>Nenhum</button>
               </div>
             </div>
 
             {/* Table */}
-            <div style={{ flex: 1, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden', minWidth: 0 }}>
+            <div style={{ flex: 1, background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, overflow: 'hidden', minWidth: 0 }}>
               {/* Table meta row */}
-              <div style={{ padding: '10px 14px', borderBottom: '1px solid #f0f4fb', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                <span style={{ fontSize: 12, color: '#6b7280' }}>
-                  Mostrando <strong style={{ color: '#00963F' }}>{((page - 1) * PAGE_SIZE + 1).toLocaleString('pt-BR')}</strong> – <strong style={{ color: '#00963F' }}>{Math.min(page * PAGE_SIZE, filteredDirig.length).toLocaleString('pt-BR')}</strong> de <strong>{filteredDirig.length.toLocaleString('pt-BR')}</strong> registros
+              <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--color-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
+                  Mostrando <strong style={{ color: 'var(--color-primary)' }}>{((page - 1) * PAGE_SIZE + 1).toLocaleString('pt-BR')}</strong> – <strong style={{ color: 'var(--color-primary)' }}>{Math.min(page * PAGE_SIZE, filteredDirig.length).toLocaleString('pt-BR')}</strong> de <strong>{filteredDirig.length.toLocaleString('pt-BR')}</strong> registros
                 </span>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button style={{ height: 28, padding: '0 10px', border: '1px solid #e5e7eb', borderRadius: 5, background: '#fff', fontSize: 11, cursor: 'pointer', color: '#374151' }}><i className="bi bi-download" /> Exportar</button>
-                  <button style={{ height: 28, padding: '0 10px', border: '1px solid #e5e7eb', borderRadius: 5, background: '#fff', fontSize: 11, cursor: 'pointer', color: '#374151' }}><i className="bi bi-printer" /> Imprimir</button>
+                  <button style={{ height: 28, padding: '0 10px', border: '1px solid var(--color-border)', borderRadius: 5, background: '#fff', fontSize: 11, cursor: 'pointer', color: 'var(--color-text-dark)' }}><i className="bi bi-download" /> Exportar</button>
+                  <button style={{ height: 28, padding: '0 10px', border: '1px solid var(--color-border)', borderRadius: 5, background: '#fff', fontSize: 11, cursor: 'pointer', color: 'var(--color-text-dark)' }}><i className="bi bi-printer" /> Imprimir</button>
                 </div>
               </div>
 
@@ -248,9 +249,9 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
                     {shownCols.map(c => <col key={c.key} style={{ width: c.w }} />)}
                   </colgroup>
                   <thead>
-                    <tr style={{ background: '#f8fafc', position: 'sticky', top: 0, zIndex: 1 }}>
+                    <tr style={{ background: 'var(--color-bg-input)', position: 'sticky', top: 0, zIndex: 1 }}>
                       {shownCols.map(c => (
-                        <th key={c.key} style={{ padding: '9px 10px', textAlign: 'left', fontWeight: 700, fontSize: 11, color: '#374151', borderBottom: '2px solid #e5e7eb', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <th key={c.key} style={{ padding: '9px 10px', textAlign: 'left', fontWeight: 700, fontSize: 11, color: 'var(--color-text-dark)', borderBottom: '2px solid var(--color-border)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {c.label}
                         </th>
                       ))}
@@ -258,18 +259,18 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
                   </thead>
                   <tbody>
                     {pageData.length === 0 ? (
-                      <tr><td colSpan={shownCols.length} style={{ padding: '40px', textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>Nenhum registro encontrado.</td></tr>
+                      <tr><td colSpan={shownCols.length}><EmptyState title="Nenhum registro encontrado." size="sm" /></td></tr>
                     ) : pageData.map((row, ri) => (
-                      <tr key={row.id} style={{ background: ri % 2 === 0 ? '#fff' : '#f9fafb', borderBottom: '1px solid #f3f4f6' }}
+                      <tr key={row.id} style={{ background: ri % 2 === 0 ? '#fff' : '#f9fafb', borderBottom: '1px solid var(--color-bg-page)' }}
                         onMouseEnter={e => e.currentTarget.style.background = '#eff6ff'}
                         onMouseLeave={e => e.currentTarget.style.background = ri % 2 === 0 ? '#fff' : '#f9fafb'}
                       >
                         {shownCols.map(c => {
                           const val = (row as Record<string, unknown>)[c.key] as string;
-                          if (c.key === 'situacaoVigencia') return <td key={c.key} style={{ padding: '7px 10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><span style={{ background: '#dcfce7', color: '#15803d', borderRadius: 100, padding: '1px 8px', fontSize: 10, fontWeight: 600 }}>Vigente</span></td>;
-                          if (c.key === 'situacaoRegistro') return <td key={c.key} style={{ padding: '7px 10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><span style={{ background: val === 'Anotado' ? '#f0f4fb' : '#fff0f2', color: val === 'Anotado' ? '#374151' : '#c0182d', borderRadius: 4, padding: '1px 8px', fontSize: 10, fontWeight: 500 }}>{val}</span></td>;
-                          if (c.key === 'respAdm' || c.key === 'respFinan') return <td key={c.key} style={{ padding: '7px 10px', textAlign: 'center' }}>{val === 'Sim' ? <span style={{ color: '#15803d', fontWeight: 700 }}>Sim</span> : <span style={{ color: '#9ca3af' }}>Não</span>}</td>;
-                          return <td key={c.key} style={{ padding: '7px 10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#374151' }}>{val}</td>;
+                          if (c.key === 'situacaoVigencia') return <td key={c.key} style={{ padding: '7px 10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><span style={{ background: '#dcfce7', color: 'var(--color-success)', borderRadius: 100, padding: '1px 8px', fontSize: 10, fontWeight: 600 }}>Vigente</span></td>;
+                          if (c.key === 'situacaoRegistro') return <td key={c.key} style={{ padding: '7px 10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><span style={{ background: val === 'Anotado' ? 'var(--color-bg-subtle)' : '#fff0f2', color: val === 'Anotado' ? 'var(--color-text-dark)' : '#c0182d', borderRadius: 4, padding: '1px 8px', fontSize: 10, fontWeight: 500 }}>{val}</span></td>;
+                          if (c.key === 'respAdm' || c.key === 'respFinan') return <td key={c.key} style={{ padding: '7px 10px', textAlign: 'center' }}>{val === 'Sim' ? <span style={{ color: 'var(--color-success)', fontWeight: 700 }}>Sim</span> : <span style={{ color: 'var(--color-text-muted)' }}>Não</span>}</td>;
+                          return <td key={c.key} style={{ padding: '7px 10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-text-dark)' }}>{val}</td>;
                         })}
                       </tr>
                     ))}
@@ -278,8 +279,8 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
               </div>
 
               {/* Pagination */}
-              <div style={{ padding: '10px 14px', borderTop: '1px solid #f0f4fb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, color: '#6b7280' }}>Linhas por página: <strong>50</strong></span>
+              <div style={{ padding: '10px 14px', borderTop: '1px solid var(--color-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Linhas por página: <strong>50</strong></span>
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                   <PagBtn disabled={page === 1} onClick={() => setPage(1)}>«</PagBtn>
                   <PagBtn disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</PagBtn>
@@ -295,7 +296,7 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
                   <PagBtn disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>›</PagBtn>
                   <PagBtn disabled={page === totalPages} onClick={() => setPage(totalPages)}>»</PagBtn>
                 </div>
-                <span style={{ fontSize: 12, color: '#6b7280' }}>Página {page} de {totalPages.toLocaleString('pt-BR')}</span>
+                <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Página {page} de {totalPages.toLocaleString('pt-BR')}</span>
               </div>
             </div>
 
@@ -314,10 +315,10 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
 
       {/* ── EMPTY TABS ──────────────────────────────────────────────────── */}
       {(tab === 'usuarios' || tab === 'convenios' || tab === 'ondemand') && (
-        <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '60px', textAlign: 'center' }}>
-          <i className={`bi ${TABS.find(t => t.id === tab)?.icon}`} style={{ fontSize: 48, color: '#d1d5db', display: 'block', marginBottom: 16 }} />
-          <div style={{ fontWeight: 700, fontSize: 16, color: '#374151', marginBottom: 8 }}>{TABS.find(t => t.id === tab)?.label}</div>
-          <div style={{ fontSize: 13, color: '#9ca3af' }}>Módulo em desenvolvimento.</div>
+        <div style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, padding: '60px', textAlign: 'center' }}>
+          <i className={`bi ${TABS.find(t => t.id === tab)?.icon}`} style={{ fontSize: 48, color: 'var(--color-border-input)', display: 'block', marginBottom: 16 }} />
+          <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--color-text-dark)', marginBottom: 8 }}>{TABS.find(t => t.id === tab)?.label}</div>
+          <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Módulo em desenvolvimento.</div>
         </div>
       )}
     </div>
@@ -327,7 +328,7 @@ export default function BIDataPage({ onNavigate }: { onNavigate: NavigateFn }) {
 /* ── Pagination button ───────────────────────────────────────────────────── */
 function PagBtn({ children, onClick, disabled, active }: { children: React.ReactNode; onClick?: () => void; disabled?: boolean; active?: boolean }) {
   return (
-    <button onClick={onClick} disabled={disabled} style={{ minWidth: 30, height: 28, padding: '0 8px', border: `1px solid ${active ? '#00963F' : '#e5e7eb'}`, borderRadius: 5, background: active ? '#00963F' : '#fff', color: active ? '#fff' : disabled ? '#d1d5db' : '#374151', fontSize: 12, cursor: disabled ? 'default' : 'pointer', fontFamily: 'Open Sans, sans-serif' }}>
+    <button onClick={onClick} disabled={disabled} style={{ minWidth: 30, height: 28, padding: '0 8px', border: `1px solid ${active ? 'var(--color-primary)' : 'var(--color-border)'}`, borderRadius: 5, background: active ? 'var(--color-primary)' : '#fff', color: active ? '#fff' : disabled ? 'var(--color-border-input)' : 'var(--color-text-dark)', fontSize: 12, cursor: disabled ? 'default' : 'pointer', fontFamily: 'Open Sans, sans-serif' }}>
       {children}
     </button>
   );
@@ -345,39 +346,39 @@ function SimpleTab({ title, total, icon, data, cols }: {
   const totalPages = Math.ceil(data.length / SIZE);
 
   return (
-    <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, overflow: 'hidden' }}>
-      <div style={{ padding: '10px 16px', borderBottom: '1px solid #f0f4fb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div style={{ background: '#fff', border: '1px solid var(--color-border)', borderRadius: 8, overflow: 'hidden' }}>
+      <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--color-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <i className={`bi ${icon}`} style={{ color: '#00963F', fontSize: 14 }} />
-          <span style={{ fontWeight: 700, fontSize: 13, color: '#1e293b' }}>{title}</span>
-          <span style={{ background: '#eff6ff', color: '#00963F', borderRadius: 100, padding: '1px 10px', fontSize: 11, fontWeight: 600 }}>{total.toLocaleString('pt-BR')}</span>
+          <i className={`bi ${icon}`} style={{ color: 'var(--color-primary)', fontSize: 14 }} />
+          <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--color-text-strong)' }}>{title}</span>
+          <span style={{ background: '#eff6ff', color: 'var(--color-primary)', borderRadius: 100, padding: '1px 10px', fontSize: 11, fontWeight: 600 }}>{total.toLocaleString('pt-BR')}</span>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          <button style={{ height: 28, padding: '0 10px', border: '1px solid #e5e7eb', borderRadius: 5, background: '#fff', fontSize: 11, cursor: 'pointer' }}><i className="bi bi-download" /> Exportar</button>
+          <button style={{ height: 28, padding: '0 10px', border: '1px solid var(--color-border)', borderRadius: 5, background: '#fff', fontSize: 11, cursor: 'pointer' }}><i className="bi bi-download" /> Exportar</button>
         </div>
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ borderCollapse: 'collapse', fontSize: 12, width: '100%', tableLayout: 'fixed' }}>
           <colgroup>{cols.map(c => <col key={c.key} style={{ width: c.w }} />)}</colgroup>
           <thead>
-            <tr style={{ background: '#f8fafc' }}>
-              {cols.map(c => <th key={c.key} style={{ padding: '9px 10px', textAlign: 'left', fontWeight: 700, fontSize: 11, color: '#374151', borderBottom: '2px solid #e5e7eb', whiteSpace: 'nowrap' }}>{c.label}</th>)}
+            <tr style={{ background: 'var(--color-bg-input)' }}>
+              {cols.map(c => <th key={c.key} style={{ padding: '9px 10px', textAlign: 'left', fontWeight: 700, fontSize: 11, color: 'var(--color-text-dark)', borderBottom: '2px solid var(--color-border)', whiteSpace: 'nowrap' }}>{c.label}</th>)}
             </tr>
           </thead>
           <tbody>
             {pageData.map((row, ri) => (
-              <tr key={ri} style={{ background: ri % 2 === 0 ? '#fff' : '#f9fafb', borderBottom: '1px solid #f3f4f6' }}
+              <tr key={ri} style={{ background: ri % 2 === 0 ? '#fff' : '#f9fafb', borderBottom: '1px solid var(--color-bg-page)' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#eff6ff'}
                 onMouseLeave={e => e.currentTarget.style.background = ri % 2 === 0 ? '#fff' : '#f9fafb'}
               >
-                {cols.map(c => <td key={c.key} style={{ padding: '7px 10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#374151' }}>{String(row[c.key] ?? '—')}</td>)}
+                {cols.map(c => <td key={c.key} style={{ padding: '7px 10px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-text-dark)' }}>{String(row[c.key] ?? '—')}</td>)}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <div style={{ padding: '10px 16px', borderTop: '1px solid #f0f4fb', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 12, color: '#6b7280' }}>Página {page} de {totalPages}</span>
+      <div style={{ padding: '10px 16px', borderTop: '1px solid var(--color-bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>Página {page} de {totalPages}</span>
         <div style={{ display: 'flex', gap: 4 }}>
           <PagBtn disabled={page === 1} onClick={() => setPage(p => p - 1)}>‹</PagBtn>
           <PagBtn disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>›</PagBtn>

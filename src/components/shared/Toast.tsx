@@ -18,7 +18,7 @@ export default function Toast({ message, title, type = 'warning', onClose, autoC
 
   const colors: Record<string, { bg: string; border: string; icon: string; iconColor: string }> = {
     warning: { bg: '#fffbeb', border: '#fbbf24', icon: 'bi-exclamation-triangle-fill', iconColor: '#d97706' },
-    error:   { bg: '#fef2f2', border: '#f87171', icon: 'bi-x-circle-fill', iconColor: '#dc2626' },
+    error:   { bg: '#fef2f2', border: '#f87171', icon: 'bi-x-circle-fill', iconColor: 'var(--color-error)' },
     success: { bg: '#f0fdf4', border: '#4ade80', icon: 'bi-check-circle-fill', iconColor: '#16a34a' },
   };
 
@@ -50,14 +50,14 @@ export default function Toast({ message, title, type = 'warning', onClose, autoC
         <div style={{ fontWeight: 700, fontSize: 13, color: '#1e1e2d', marginBottom: 2 }}>
           {title ?? (type === 'warning' ? 'Atenção!' : type === 'error' ? 'Erro!' : 'Sucesso!')}
         </div>
-        <div style={{ fontSize: 13, color: '#374151', lineHeight: 1.5 }}>{message}</div>
+        <div style={{ fontSize: 13, color: 'var(--color-text-dark)', lineHeight: 1.5 }}>{message}</div>
       </div>
 
       <button
         onClick={onClose}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          color: '#9ca3af', fontSize: 18, lineHeight: 1, padding: '0 2px',
+          color: 'var(--color-text-muted)', fontSize: 18, lineHeight: 1, padding: '0 2px',
           flexShrink: 0,
         }}
       >
