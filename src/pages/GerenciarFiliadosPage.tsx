@@ -71,9 +71,6 @@ function StepTracker({ item }: { item: FP }) {
           );
         })}
       </div>
-      {/* dir indicators */}
-      <DirRow mun={item.enviadoMunicipal} est={item.enviadoEstadual} />
-
       {/* portal tooltip */}
       {tip && createPortal(
         <div style={{ position: 'fixed', top: tip.top, left: tip.left, zIndex: 9000, background: 'var(--color-text-strong)', borderRadius: 10, padding: '12px 16px', width: 240, boxShadow: '0 12px 32px rgba(0,0,0,0.3)', pointerEvents: 'none', fontFamily: 'Open Sans, sans-serif' }}>
@@ -101,22 +98,6 @@ function StepTracker({ item }: { item: FP }) {
   );
 }
 
-function DirRow({ mun, est }: { mun: boolean; est: boolean }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <DirChip label="Municipal" sent={mun} />
-      <DirChip label="Estadual"  sent={est} />
-    </div>
-  );
-}
-function DirChip({ label, sent }: { label: string; sent: boolean }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 3, fontSize: 9.5, color: sent ? '#16a34a' : 'var(--color-text-muted)', fontWeight: 500 }}>
-      <i className={`bi bi-${sent ? 'check-circle-fill' : 'clock'}`} style={{ fontSize: 8.5 }} />
-      <span>{label} {sent ? 'enviado' : 'pendente'}</span>
-    </div>
-  );
-}
 
 function statusFPVariant(s: StatusFP): BadgeVariant {
   if (s === 'Deferido') return 'success';
@@ -299,7 +280,7 @@ function VerModal({ item, onClose }: { item: FP; onClose: () => void }) {
 }
 
 /* ─── Filter state ──────────────────────────────────────────────────────── */
-const EMPTY_F = { nome:'', uf:'', municipio:'', etapa:'', status:'', processo:'', dtAbertura:'', tipoDiretorio:'', enviado:'' };
+const EMPTY_F = { nome:'', uf:'', municipio:'', etapa:'', status:'', processo:'', dtAbertura:'', enviado:'' };
 
 /* ─── Main page ─────────────────────────────────────────────────────────── */
 export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: NavigateFn }) {
@@ -337,7 +318,7 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
       const [dd, mm, yyyy] = a.dtAbertura.split('/');
       if (yyyy && `${yyyy}-${mm}-${dd}` !== r.dtAberturaDt) return false;
     }
-    if (a.tipoDiretorio && r.tipoDiretorio !== a.tipoDiretorio) return false;
+
     if (a.enviado === 'Sim' && !r.enviadoMunicipal && !r.enviadoEstadual) return false;
     if (a.enviado === 'Não' && (r.enviadoMunicipal || r.enviadoEstadual)) return false;
     return true;
@@ -366,7 +347,7 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
   const statusOpts: Opt[] = [{ value:'Pendente', label:'Pendente' }, { value:'Deferido', label:'Deferido' }, { value:'Indeferido', label:'Indeferido' }];
   const ufOpts = Object.keys(UF_MUNS).sort().map(u => ({ value: u, label: u }));
   const munOpts = ufMuns.map(m => ({ value: m, label: m }));
-  const tipoOpts: Opt[] = [{ value:'Municipal', label:'Municipal' }, { value:'Estadual', label:'Estadual' }];
+
   const enviadoOpts: Opt[] = [{ value:'Sim', label:'Sim' }, { value:'Não', label:'Não' }];
 
   return (
@@ -416,7 +397,7 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
           <div><label style={lb}>Status</label><CustomSelect value={f.status} onChange={set('status')} options={statusOpts} placeholder="Todos" /></div>
         </div>
         {/* Row 2 */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : '2fr 1fr 1.3fr 1fr auto auto', gap: 12, alignItems: 'flex-end' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : '2fr 1fr 1.3fr auto auto', gap: 12, alignItems: 'flex-end' }}>
           <div>
             <label style={lb}>Nº do Processo 1doc</label>
             <input value={f.processo} onChange={e => setF(p => ({ ...p, processo: e.target.value }))} placeholder="Ex: PROC-2024-000001"
@@ -428,7 +409,7 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
             <label style={lb}>Data de Abertura</label>
             <DatePicker value={f.dtAbertura} onChange={v => setF(p => ({ ...p, dtAbertura: v }))} />
           </div>
-          <div><label style={lb}>Tipo de Diretório</label><CustomSelect value={f.tipoDiretorio} onChange={set('tipoDiretorio')} options={tipoOpts} placeholder="Todos" /></div>
+
           <div><label style={lb}>Enviado ao diretório</label><CustomSelect value={f.enviado} onChange={set('enviado')} options={enviadoOpts} placeholder="Todos" /></div>
           <Button variant="ghost" size="sm" onClick={clear} icon="bi-x-circle">Limpar</Button>
           <Button variant="primary" size="sm" onClick={apply} icon="bi-funnel-fill">Filtrar</Button>

@@ -45,7 +45,7 @@ const NAV_ITEMS: NavItem[] = [
     children: [{ label: 'Consultar Órgãos Partidários', page: 'orgao' }] },
   { id: 'dirigentes', label: 'Dirigentes',           icon: 'bi-person-badge-fill',
     children: [{ label: 'Consultar Dirigentes', page: 'dirigente' }] },
-  { id: 'bi',         label: 'BI',                   icon: 'bi-speedometer2', page: 'bi' },
+  { id: 'bi',         label: 'Explorar Dados',        icon: 'bi-speedometer2', page: 'bi' },
   { id: 'config',     label: 'Configurações',        icon: 'bi-gear-fill',
     children: [
       { label: 'Perfis',        page: 'perfil' },
@@ -489,7 +489,7 @@ function WelcomeCard({ onNavigate, isMobile }: { onNavigate: NavigateFn; isMobil
     { label: 'Filiados',    icon: 'bi-diagram-3-fill',    page: 'filiacao'   as Page, color: '#8b5cf6' },
     { label: 'Órgãos',      icon: 'bi-bank2',             page: 'orgao'      as Page, color: '#0ea5e9' },
     { label: 'Dirigentes',  icon: 'bi-person-badge-fill', page: 'dirigente'  as Page, color: '#10b981' },
-    { label: 'BI',          icon: 'bi-speedometer2',      page: 'bi'         as Page, color: '#f59e0b' },
+    { label: 'Explorar Dados', icon: 'bi-speedometer2',    page: 'bi'         as Page, color: '#f59e0b' },
     { label: 'Usuários',    icon: 'bi-person-gear',       page: 'usuario'    as Page, color: '#ec4899' },
   ];
 
