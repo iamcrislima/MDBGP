@@ -341,7 +341,7 @@ export default function GerenciarFiliadosPage({ onNavigate }: { onNavigate: Navi
 
   const lb: React.CSSProperties = { display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: 5 };
   const th: React.CSSProperties = { padding: '9px 12px', textAlign: 'left', fontWeight: 700, fontSize: 11, color: 'var(--color-text-dark)', borderBottom: '2px solid var(--color-border)', background: 'var(--color-bg-input)', whiteSpace: 'nowrap' };
-  const td: React.CSSProperties = { padding: '10px 12px', fontSize: 12, color: 'var(--color-text-dark)', verticalAlign: 'top' };
+  const td: React.CSSProperties = { padding: '10px 12px', fontSize: 12, color: 'var(--color-text-dark)', verticalAlign: 'middle' };
 
   const etapaOpts = ETAPAS.map(e => ({ value: e, label: e }));
   const statusOpts: Opt[] = [{ value:'Pendente', label:'Pendente' }, { value:'Deferido', label:'Deferido' }, { value:'Indeferido', label:'Indeferido' }];
